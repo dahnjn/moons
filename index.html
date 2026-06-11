@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>ANOVA — Lunar Mining</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#030407;
+  --panel:#0b0e13;
+  --panel2:#111722;
+  --line:#263241;
+  --line2:#415064;
+  --white:#f4f7fb;
+  --muted:#8190a3;
+  --cyan:#7df9ff;
+  --red:#ff4d5e;
+  --green:#35ff9c;
+  --amber:#ffcc66;
+}
+body{
+  font-family:'IBM Plex Sans',sans-serif;
+  background:
+    radial-gradient(circle at 20% 0%,rgba(80,120,160,.16),transparent 34%),
+    radial-gradient(circle at 80% 20%,rgba(125,249,255,.08),transparent 28%),
+    linear-gradient(180deg,#05070b 0%,#020305 100%);
+  color:var(--white);
+  height:100vh;
+  overflow:hidden;
+}
+.game-container{
+  max-width:1520px;
+  height:100vh;
+  margin:0 auto;
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+header{
+  border:1px solid rgba(255,255,255,.08);
+  background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.025));
+  border-radius:18px;
+  padding:12px 18px;
+  box-shadow:0 20px 60px rgba(0,0,0,.35);
+}
+.topline{
+  display:grid;
+  grid-template-columns:1fr auto 1fr;
+  align-items:center;
+  gap:18px;
+}
+.brand{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:.72rem;
+  letter-spacing:.28em;
+  color:var(--muted);
+  text-transform:uppercase;
+}
+h1{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:3.7rem;
+  letter-spacing:.42em;
+  line-height:.9;
+  font-weight:700;
+  color:#fff;
+  text-shadow:0 0 22px rgba(125,249,255,.35);
+}
+.header-stats{
+  margin-top:12px;
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:10px;
+}
+.stat-box{
+  background:rgba(255,255,255,.035);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:12px;
+  padding:8px 10px;
+}
+.stat-label{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:.62rem;
+  color:var(--muted);
+  letter-spacing:.14em;
+  text-transform:uppercase;
+}
+.stat-value{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:1.65rem;
+  font-weight:700;
+  margin-top:2px;
+}
+.main-layout{
+  flex:1;
+  min-height:0;
+  display:grid;
+  grid-template-columns:270px 1fr 280px;
+  gap:12px;
+}
+.panel{
+  background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.018));
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:18px;
+  padding:14px;
+  overflow:auto;
+  box-shadow:0 20px 60px rgba(0,0,0,.35);
+}
+.panel-title{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:.72rem;
+  color:var(--muted);
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  margin-bottom:10px;
+}
+.create-team-form{
+  display:flex;
+  gap:7px;
+  margin-bottom:12px;
+}
+.create-team-form input{
+  min-width:0;
+  flex:1;
+  padding:10px;
+  background:#06080c;
+  color:#fff;
+  border:1px solid var(--line);
+  border-radius:9px;
+  font-family:'IBM Plex Mono',monospace;
+}
+.create-team-form input:focus{outline:none;border-color:var(--cyan)}
+.btn{
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:9px;
+  padding:9px 12px;
+  font-family:'IBM Plex Mono',monospace;
+  font-weight:700;
+  font-size:.72rem;
+  cursor:pointer;
+  transition:.18s ease;
+  background:#121925;
+  color:#fff;
+}
+.btn:hover{
+  transform:translateY(-1px);
+  border-color:var(--cyan);
+}
+.btn-primary{
+  background:#fff;
+  color:#030407;
+}
+.btn-danger{
+  color:var(--red);
+  border-color:rgba(255,77,94,.55);
+  background:rgba(255,77,94,.08);
+}
+.team-list{display:flex;flex-direction:column;gap:8px}
+.team-card{
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.035);
+  border-radius:14px;
+  padding:10px;
+  cursor:pointer;
+}
+.team-card.active{
+  border-color:var(--cyan);
+  box-shadow:0 0 0 1px rgba(125,249,255,.25),0 0 22px rgba(125,249,255,.12);
+}
+.team-card.mining{opacity:.65}
+.team-name{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  font-weight:700;
+  margin-bottom:7px;
+}
+.team-dot{
+  width:10px;
+  height:10px;
+  border-radius:50%;
+  display:inline-block;
+}
+.team-status{
+  margin-left:auto;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:.56rem;
+  color:var(--muted);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:999px;
+  padding:2px 6px;
+}
+.team-stats{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:.68rem;
+  color:var(--muted);
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:4px;
+}
+.travel-box{
+  margin-top:14px;
+  padding:12px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:14px;
+  background:rgba(0,0,0,.18);
+}
+.travel-buttons{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:7px;
+}
+.moon-stage{
+  position:relative;
+  background:
+    radial-gradient(circle at 50% 48%,rgba(125,249,255,.06),transparent 42%),
+    linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.015));
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:18px;
+  overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,.42);
+  padding:16px;
+  display:grid;
+  grid-template-rows:auto 1fr;
+  gap:14px;
+}
+.moons-row{
+  display:flex;
+  align-items:flex-end;
+  justify-content:center;
+  gap:34px;
+  min-height:152px;
+  padding:8px 6px 0;
+}
+.moon-select{
+  background:transparent;
+  border:none;
+  cursor:pointer;
+  color:#fff;
+  text-align:center;
+  position:relative;
+  opacity:.72;
+  transition:.18s ease;
+}
+.moon-select:hover,.moon-select.active{opacity:1;transform:translateY(-2px)}
+.moon-name{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:.75rem;
+  letter-spacing:.12em;
+  margin-top:8px;
+  color:#c9d4e2;
+}
+.moon-sub{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:.58rem;
+  color:var(--muted);
+  margin-top:3px;
+}
+.moon-orb{
+  margin:auto;
+  border-radius:50%;
+  position:relative;
+  overflow:hidden;
+  background:
+    radial-gradient(circle at 31% 24%,rgba(255,255,255,.9),rgba(230,235,238,.75) 11%,rgba(150,157,165,.8) 31%,rgba(72,78,88,.95) 58%,rgba(24,27,33,1) 100%);
+  box-shadow:
+    inset -28px -32px 42px rgba(0,0,0,.78),
+    inset 18px 14px 30px rgba(255,255,255,.18),
+    0 0 34px rgba(180,210,230,.15);
+}
+.moon-orb:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    radial-gradient(circle at 22% 36%,rgba(30,32,36,.6) 0 5%,transparent 6%),
+    radial-gradient(circle at 64% 30%,rgba(40,42,46,.5) 0 6%,transparent 7%),
+    radial-gradient(circle at 48% 66%,rgba(25,26,30,.58) 0 8%,transparent 9%),
+    radial-gradient(circle at 76% 62%,rgba(210,215,220,.16) 0 5%,transparent 6%),
+    radial-gradient(circle at 34% 72%,rgba(20,22,25,.45) 0 4%,transparent 5%);
+  mix-blend-mode:multiply;
+}
+.moon-orb:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:
+    linear-gradient(115deg,rgba(255,255,255,.18),transparent 30%,rgba(0,0,0,.3) 72%);
+}
+.moon-a .moon-orb{width:74px;height:74px}
+.moon-b .moon-orb{width:105px;height:105px}
+.moon-c .moon-orb{width:138px;height:138px}
+.moon-select.active .moon-orb{
+  outline:1px solid rgba(255,255,255,.5);
+}
+.board-wrap{
+  min-height:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.board-shell{
+  position:relative;
+  width:min(620px,100%);
+  aspect-ratio:1;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:
+    radial-gradient(circle at 35% 28%,rgba(255,255,255,.18),transparent 16%),
+    radial-gradient(circle at 45% 52%,rgba(255,255,255,.05),transparent 42%),
+    radial-gradient(circle at 50% 50%,#9ca3aa 0%,#5e6671 38%,#252a31 69%,#08090d 100%);
+  box-shadow:
+    inset -90px -70px 120px rgba(0,0,0,.82),
+    inset 42px 35px 70px rgba(255,255,255,.16),
+    0 0 90px rgba(125,249,255,.08);
+}
+.board-shell:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+  background:
+    radial-gradient(circle at 24% 34%,rgba(20,22,27,.32) 0 6%,transparent 7%),
+    radial-gradient(circle at 70% 31%,rgba(10,12,15,.28) 0 7%,transparent 8%),
+    radial-gradient(circle at 53% 73%,rgba(30,32,36,.36) 0 9%,transparent 10%),
+    radial-gradient(circle at 76% 68%,rgba(255,255,255,.09) 0 5%,transparent 6%),
+    radial-gradient(circle at 35% 70%,rgba(12,13,16,.25) 0 5%,transparent 6%);
+  pointer-events:none;
+}
+.board-shell:after{
+  content:"";
+  position:absolute;
+  inset:-2px;
+  border-radius:50%;
+  border:1px solid rgba(255,255,255,.18);
+  box-shadow:var(--moonGlow,0 0 0 rgba(0,0,0,0));
+  pointer-events:none;
+}
+.grid{
+  width:73%;
+  height:73%;
+  display:grid;
+  grid-template-columns:repeat(9,1fr);
+  grid-template-rows:repeat(9,1fr);
+  gap:6px;
+  position:relative;
+  z-index:2;
+}
+.cell{
+  border:1px solid rgba(255,255,255,.28);
+  background:rgba(5,8,12,.58);
+  color:#dce7f3;
+  border-radius:8px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:.66rem;
+  font-weight:700;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  backdrop-filter:blur(6px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12);
+  transition:.16s ease;
+}
+.cell:hover{
+  transform:scale(1.12);
+  border-color:#fff;
+  z-index:4;
+}
+.cell.zero{
+  color:#05070b;
+  background:rgba(255,255,255,.86);
+  border-color:#fff;
+}
+.cell.mined{
+  color:#fff;
+  opacity:.96;
+  cursor:help;
+  transform:none;
+}
+.cell.closed{
+  opacity:.32;
+  cursor:not-allowed;
+  background:rgba(0,0,0,.75);
+}
+.cell.closed:hover{transform:none}
+.cell .hidden-id{display:none}
+.cell.hide-values{
+  color:#aeb9c7;
+}
+.cell.hide-values .value{display:none}
+.cell.hide-values .hidden-id{display:inline}
+.info-section{margin-bottom:16px}
+.leaderboard-entry{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  border:1px solid rgba(255,255,255,.08);
+  background:rgba(255,255,255,.035);
+  border-radius:12px;
+  padding:10px;
+  margin-bottom:8px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:.88rem;
+}
+.small-note{
+  font-family:'IBM Plex Mono',monospace;
+  color:var(--muted);
+  font-size:.68rem;
+  line-height:1.45;
+}
+.controls{
+  margin-top:auto;
+  display:grid;
+  gap:8px;
+}
+.control-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.overlay{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.78);
+  z-index:90;
+  display:none;
+}
+.popup{
+  position:fixed;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  width:min(650px,92vw);
+  background:linear-gradient(180deg,#121a25,#070a0f);
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:22px;
+  padding:24px;
+  z-index:100;
+  display:none;
+  box-shadow:0 40px 120px rgba(0,0,0,.75),0 0 44px rgba(125,249,255,.12);
+}
+.popup-x{
+  position:absolute;
+  top:12px;
+  right:14px;
+  background:transparent;
+  border:none;
+  color:var(--muted);
+  font-size:1.1rem;
+  cursor:pointer;
+}
+.popup-head{
+  text-align:center;
+  margin-bottom:18px;
+}
+.popup-title{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:.8rem;
+  color:var(--muted);
+  letter-spacing:.18em;
+  text-transform:uppercase;
+}
+.popup-value{
+  margin-top:4px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:3rem;
+  font-weight:700;
+}
+.speed-options{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:12px;
+}
+.speed-btn{
+  border:1px solid rgba(255,255,255,.16);
+  background:rgba(255,255,255,.045);
+  color:#fff;
+  border-radius:16px;
+  padding:16px 12px;
+  cursor:pointer;
+  transition:.18s ease;
+}
+.speed-btn:hover{
+  transform:translateY(-4px);
+  border-color:#fff;
+}
+.speed-name{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:1rem;
+  font-weight:700;
+  margin-bottom:10px;
+}
+.speed-stats{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:.75rem;
+  color:var(--muted);
+  line-height:1.65;
+}
+.zero-warning{
+  color:var(--red);
+  text-align:center;
+  font-family:'IBM Plex Mono',monospace;
+  margin-top:12px;
+  line-height:1.5;
+}
+.winner-banner{
+  position:fixed;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  width:min(760px,92vw);
+  max-height:88vh;
+  overflow:auto;
+  background:linear-gradient(180deg,#121a25,#05070b);
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:24px;
+  padding:28px;
+  z-index:110;
+  display:none;
+  box-shadow:0 40px 120px rgba(0,0,0,.8),0 0 70px rgba(125,249,255,.14);
+}
+.winner-name{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:1.7rem;
+  font-weight:700;
+  margin-bottom:18px;
+}
+.final-row{
+  font-family:'IBM Plex Mono',monospace;
+  padding:9px 0;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+@media(max-width:1100px){
+  body{overflow:auto;height:auto}
+  .game-container{height:auto}
+  .main-layout{grid-template-columns:1fr}
+  .header-stats{grid-template-columns:repeat(2,1fr)}
+  .topline{grid-template-columns:1fr;text-align:center}
+}
+</style>
+</head>
+<body>
+<div class="game-container">
+  <header>
+    <div class="topline">
+      <div class="brand">Lunar Resource Simulation</div>
+      <h1>ANOVA</h1>
+      <div class="brand" style="text-align:right">Moon A → Moon B → Moon C</div>
+    </div>
+    <div class="header-stats">
+      <div class="stat-box"><div class="stat-label">Day</div><div class="stat-value" id="dayValue" style="color:var(--cyan)">1</div></div>
+      <div class="stat-box"><div class="stat-label">Available</div><div class="stat-value" id="remainingValue" style="color:var(--amber)">0</div></div>
+      <div class="stat-box"><div class="stat-label">Mined</div><div class="stat-value" id="minedValue" style="color:var(--green)">0</div></div>
+      <div class="stat-box"><div class="stat-label">Destroyed</div><div class="stat-value" id="destroyedValue" style="color:var(--red)">0</div></div>
+      <div class="stat-box"><div class="stat-label">Lost</div><div class="stat-value" id="lostValue" style="color:var(--muted)">0</div></div>
+    </div>
+  </header>
+
+  <div class="main-layout">
+    <aside class="panel">
+      <div class="panel-title">Teams</div>
+      <div class="create-team-form">
+        <input type="text" id="teamNameInput" placeholder="Team name..." maxlength="12">
+        <button class="btn btn-primary" onclick="createTeam()">+</button>
+      </div>
+      <div id="teamList" class="team-list"></div>
+
+      <div class="travel-box">
+        <div class="panel-title">Transit</div>
+        <div class="small-note" style="margin-bottom:10px">
+          All teams begin on Moon A. Travel A ↔ B costs 10 days. Travel B ↔ C costs 30 days.
+        </div>
+        <div class="travel-buttons">
+          <button class="btn" onclick="travelSelectedTeam('A')">Travel to Moon A</button>
+          <button class="btn" onclick="travelSelectedTeam('B')">Travel to Moon B</button>
+          <button class="btn" onclick="travelSelectedTeam('C')">Travel to Moon C</button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="moon-stage">
+      <div class="moons-row">
+        <button class="moon-select moon-a active" id="moonBtnA" onclick="selectMoon('A')">
+          <div class="moon-orb" id="orbA"></div>
+          <div class="moon-name">MOON A</div>
+          <div class="moon-sub">Small / Start</div>
+        </button>
+        <button class="moon-select moon-b" id="moonBtnB" onclick="selectMoon('B')">
+          <div class="moon-orb" id="orbB"></div>
+          <div class="moon-name">MOON B</div>
+          <div class="moon-sub">Medium / +10 Days</div>
+        </button>
+        <button class="moon-select moon-c" id="moonBtnC" onclick="selectMoon('C')">
+          <div class="moon-orb" id="orbC"></div>
+          <div class="moon-name">MOON C</div>
+          <div class="moon-sub">Large / +30 Days from B</div>
+        </button>
+      </div>
+      <div class="board-wrap">
+        <div class="board-shell" id="boardShell">
+          <div class="grid" id="grid"></div>
+        </div>
+      </div>
+    </main>
+
+    <aside class="panel" style="display:flex;flex-direction:column">
+      <div class="info-section">
+        <div class="panel-title">Leaderboard</div>
+        <div id="leaderboard"></div>
+      </div>
+
+      <div class="info-section">
+        <div class="panel-title">Selected Team</div>
+        <div id="selectedTeamInfo" class="small-note">Create or select a team.</div>
+      </div>
+
+      <div class="info-section">
+        <div class="panel-title">System Rules</div>
+        <div class="small-note">
+          Each moon uses a patterned 9×9 ANOVA field. Every row, column, and main diagonal contains exactly one zero. Mining a zero seals its row, column, and diagonals, sending those available resources to the void.
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="control-row">
+          <button class="btn" id="toggleValuesBtn" onclick="toggleValues()">Hide Values</button>
+          <button class="btn" onclick="passTurn()">Pass</button>
+        </div>
+        <div class="control-row">
+          <button class="btn" onclick="saveGame()">Save</button>
+          <label class="btn" style="text-align:center;cursor:pointer">Load<input type="file" id="loadGameInput" accept=".json" onchange="loadGame(event)" style="display:none"></label>
+        </div>
+        <button class="btn btn-danger" onclick="endGame()">End Game</button>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<div class="overlay" id="overlay"></div>
+
+<div class="popup" id="miningPopup">
+  <button class="popup-x" onclick="closeMiningPopup()">✕</button>
+  <div class="popup-head">
+    <div class="popup-title" id="popupCellId">Moon A / A1</div>
+    <div class="popup-value" id="popupValue">0</div>
+    <div class="small-note" id="popupTeam"></div>
+  </div>
+  <div class="speed-options">
+    <button class="speed-btn" onclick="selectMiningSpeed('fast')">
+      <div class="speed-name" style="color:var(--red)">FAST</div>
+      <div class="speed-stats" id="fastStats"></div>
+    </button>
+    <button class="speed-btn" onclick="selectMiningSpeed('medium')">
+      <div class="speed-name" style="color:var(--amber)">MEDIUM</div>
+      <div class="speed-stats" id="mediumStats"></div>
+    </button>
+    <button class="speed-btn" onclick="selectMiningSpeed('slow')">
+      <div class="speed-name" style="color:var(--green)">SLOW</div>
+      <div class="speed-stats" id="slowStats"></div>
+    </button>
+  </div>
+  <div id="zeroWarning" class="zero-warning" style="display:none"></div>
+</div>
+
+<div class="winner-banner" id="winnerBanner">
+  <div class="winner-name" id="winnerName"></div>
+  <div id="finalScores"></div>
+  <button class="btn btn-primary" onclick="resetGame()" style="margin-top:20px">New Game</button>
+</div>
+
+<script>
+const teamColors=[
+  '#7DF9FF','#FF2E88','#FFFFFF','#2DFF72','#FFB000',
+  '#6B7CFF','#FF4D4D','#9DFF00','#00D1FF','#C084FC','#FF7A1A','#B9F2FF'
+];
+
+const moonInfo={
+  A:{name:'Moon A',size:'Small',travel:{B:10},seed:17,multiplier:.82},
+  B:{name:'Moon B',size:'Medium',travel:{A:10,C:30},seed:43,multiplier:1.05},
+  C:{name:'Moon C',size:'Large',travel:{B:30},seed:79,multiplier:1.28}
+};
+
+let gameState={
+  teams:[],
+  moons:{},
+  selectedTeam:null,
+  selectedMoon:'A',
+  selectedCell:null,
+  currentDay:1,
+  totalLost:0,
+  gameOver:false,
+  log:[]
+};
+
+let showingValues=true;
+
+function seededNoise(n){
+  const x=Math.sin(n*999.131)*10000;
+  return x-Math.floor(x);
+}
+
+function zeroColumns(){
+  // Exactly one zero in every row and column.
+  // Center zero also satisfies both main diagonals exactly once.
+  return [1,2,3,4,0,6,7,8,5];
+}
+
+function generateMoonGrid(moonKey){
+  const moon=moonInfo[moonKey];
+  const zeros=zeroColumns();
+  const cells={};
+  for(let r=0;r<9;r++){
+    for(let c=0;c<9;c++){
+      const id=`${String.fromCharCode(65+r)}${c+1}`;
+      let value=0;
+      if(c!==zeros[r]){
+        const wave=Math.abs(Math.sin((r+1)*1.7+(c+1)*2.3+moon.seed));
+        const ridge=((r+1)*(c+3)+(moon.seed%11)*7)%53;
+        const diagonalBoost=(r===c||r+c===8)?24:0;
+        const crater=Math.floor(seededNoise((r+1)*31+(c+1)*73+moon.seed)*42);
+        value=Math.round((28+wave*86+ridge+diagonalBoost+crater)*moon.multiplier);
+        value=Math.max(3,Math.min(200,value));
+      }
+      cells[id]={id,row:r,col:c,value,mined:false,minedBy:null,closed:false,moon:moonKey};
+    }
+  }
+  return cells;
+}
+
+function initializeGame(){
+  gameState.moons={A:generateMoonGrid('A'),B:generateMoonGrid('B'),C:generateMoonGrid('C')};
+}
+
+function createTeam(){
+  const input=document.getElementById('teamNameInput');
+  const name=input.value.trim();
+  if(!name)return;
+  if(gameState.teams.some(t=>t.name.toLowerCase()===name.toLowerCase())){alert('Team name already exists.');return;}
+  if(gameState.teams.length>=teamColors.length){alert('Maximum teams reached.');return;}
+  const team={
+    id:Date.now()+Math.floor(Math.random()*1000),
+    name,
+    color:teamColors[gameState.teams.length],
+    moon:'A',
+    status:'ready',
+    freeDay:1,
+    extracted:0,
+    destroyed:0,
+    speedChoices:{fast:0,medium:0,slow:0},
+    totalPotential:0
+  };
+  gameState.teams.push(team);
+  if(!gameState.selectedTeam)gameState.selectedTeam=team.id;
+  input.value='';
+  renderAll();
+}
+
+function selectedTeam(){
+  return gameState.teams.find(t=>t.id===gameState.selectedTeam);
+}
+
+function selectTeam(id){
+  const team=gameState.teams.find(t=>t.id===id);
+  if(!team)return;
+  gameState.selectedTeam=id;
+  gameState.selectedMoon=team.moon;
+  renderAll();
+}
+
+function selectMoon(moon){
+  gameState.selectedMoon=moon;
+  renderAll();
+}
+
+function travelSelectedTeam(destination){
+  const team=selectedTeam();
+  if(!team)return alert('Select a team first.');
+  if(team.status!=='ready')return alert(`${team.name} is unavailable until Day ${team.freeDay}.`);
+  if(team.moon===destination)return;
+  const current=moonInfo[team.moon];
+  const direct=current.travel[destination];
+  if(!direct){
+    alert('Teams must travel sequentially: A ↔ B ↔ C.');
+    return;
+  }
+  team.status='mining';
+  team.freeDay=gameState.currentDay+direct;
+  team.moon=destination;
+  gameState.selectedMoon=destination;
+  advanceClock();
+}
+
+function renderAll(){
+  document.getElementById('dayValue').textContent=gameState.currentDay;
+  renderTeams();
+  renderMoonButtons();
+  renderBoard();
+  renderLeaderboard();
+  renderSelectedTeamInfo();
+  updateTotals();
+}
+
+function renderTeams(){
+  const list=document.getElementById('teamList');
+  list.innerHTML='';
+  gameState.teams
+    .slice()
+    .sort((a,b)=>a.freeDay-b.freeDay)
+    .forEach(team=>{
+      const card=document.createElement('div');
+      card.className='team-card'+(team.id===gameState.selectedTeam?' active':'')+(team.status!=='ready'?' mining':'');
+      const net=team.extracted-team.destroyed;
+      card.innerHTML=`
+        <div class="team-name">
+          <span class="team-dot" style="background:${team.color};box-shadow:0 0 12px ${team.color}"></span>
+          ${team.name}
+          <span class="team-status">${team.status==='ready'?'READY':'DAY '+team.freeDay}</span>
+        </div>
+        <div class="team-stats">
+          <span style="color:var(--green)">▲ ${team.extracted}</span>
+          <span style="color:var(--red)">✕ ${team.destroyed}</span>
+          <span>Moon ${team.moon}</span>
+          <span style="color:${net>=0?'var(--green)':'var(--red)'}">Net ${net}</span>
+        </div>`;
+      card.onclick=()=>selectTeam(team.id);
+      list.appendChild(card);
+    });
+}
+
+function renderMoonButtons(){
+  ['A','B','C'].forEach(m=>{
+    document.getElementById('moonBtn'+m).classList.toggle('active',gameState.selectedMoon===m);
+    const teamsHere=gameState.teams.filter(t=>t.moon===m);
+    const orb=document.getElementById('orb'+m);
+    if(!teamsHere.length){
+      orb.style.boxShadow='';
+      return;
+    }
+    const glows=teamsHere.map((t,i)=>`0 0 0 ${3+i*5}px ${t.color}55, 0 0 ${22+i*12}px ${t.color}55`).join(',');
+    orb.style.boxShadow=glows+', inset -28px -32px 42px rgba(0,0,0,.78), inset 18px 14px 30px rgba(255,255,255,.18)';
+  });
+}
+
+function renderBoard(){
+  const grid=document.getElementById('grid');
+  const shell=document.getElementById('boardShell');
+  const moon=gameState.selectedMoon;
+  const teamsHere=gameState.teams.filter(t=>t.moon===moon);
+  shell.style.setProperty('--moonGlow',teamsHere.length
+    ? teamsHere.map((t,i)=>`0 0 0 ${4+i*6}px ${t.color}44, 0 0 ${36+i*14}px ${t.color}33`).join(',')
+    : '0 0 80px rgba(125,249,255,.08)'
+  );
+  grid.innerHTML='';
+  Object.values(gameState.moons[moon]).forEach(cell=>{
+    const div=document.createElement('div');
+    div.className='cell'+(cell.value===0?' zero':'')+(cell.mined?' mined':'')+(cell.closed?' closed':'')+(showingValues?'':' hide-values');
+    if(cell.minedBy){
+      const team=gameState.teams.find(t=>t.id===cell.minedBy);
+      if(team){
+        div.style.borderColor=team.color;
+        div.style.boxShadow=`0 0 14px ${team.color}88,inset 0 0 18px ${team.color}22`;
+      }
+    }
+    div.innerHTML=`<span class="value">${cell.value}</span><span class="hidden-id">${cell.id}</span>`;
+    div.onclick=()=>selectCell(cell.id);
+    grid.appendChild(div);
+  });
+}
+
+function renderLeaderboard(){
+  const board=document.getElementById('leaderboard');
+  const sorted=gameState.teams.slice().sort((a,b)=>(b.extracted-b.destroyed)-(a.extracted-a.destroyed));
+  board.innerHTML=sorted.map((t,i)=>{
+    const net=t.extracted-t.destroyed;
+    return `<div class="leaderboard-entry">
+      <span><span style="color:${t.color}">●</span> ${i+1}. ${t.name}</span>
+      <span style="color:${net>=0?'var(--green)':'var(--red)'}">${net}</span>
+    </div>`;
+  }).join('') || `<div class="small-note">No teams yet.</div>`;
+}
+
+function renderSelectedTeamInfo(){
+  const box=document.getElementById('selectedTeamInfo');
+  const team=selectedTeam();
+  if(!team){
+    box.textContent='Create or select a team.';
+    return;
+  }
+  box.innerHTML=`
+    <div style="color:${team.color};font-weight:700;margin-bottom:5px">${team.name}</div>
+    <div>Location: Moon ${team.moon}</div>
+    <div>Status: ${team.status==='ready'?'Ready':'Unavailable until Day '+team.freeDay}</div>
+    <div>Fast / Medium / Slow: ${team.speedChoices.fast} / ${team.speedChoices.medium} / ${team.speedChoices.slow}</div>
+  `;
+}
+
+function updateTotals(){
+  let available=0,mined=0,destroyed=0,lost=gameState.totalLost;
+  Object.values(gameState.moons).forEach(moonCells=>{
+    Object.values(moonCells).forEach(c=>{
+      if(!c.mined&&!c.closed)available+=c.value;
+    });
+  });
+  gameState.teams.forEach(t=>{mined+=t.extracted;destroyed+=t.destroyed});
+  document.getElementById('remainingValue').textContent=available.toLocaleString();
+  document.getElementById('minedValue').textContent=mined.toLocaleString();
+  document.getElementById('destroyedValue').textContent=destroyed.toLocaleString();
+  document.getElementById('lostValue').textContent=lost.toLocaleString();
+}
+
+function selectCell(id){
+  const team=selectedTeam();
+  if(!team)return;
+  if(team.status!=='ready')return;
+  if(team.moon!==gameState.selectedMoon)return;
+  const cell=gameState.moons[gameState.selectedMoon][id];
+  if(!cell||cell.mined||cell.closed)return;
+  gameState.selectedCell=id;
+  showMiningPopup(cell,team);
+}
+
+function showMiningPopup(cell,team){
+  document.getElementById('overlay').style.display='block';
+  document.getElementById('miningPopup').style.display='block';
+  document.getElementById('popupCellId').textContent=`Moon ${gameState.selectedMoon} / ${cell.id}`;
+  document.getElementById('popupValue').textContent=`${cell.value}`;
+  document.getElementById('popupValue').style.color=cell.value===0?'var(--red)':team.color;
+  document.getElementById('popupTeam').innerHTML=`Team: <span style="color:${team.color}">${team.name}</span>`;
+  const zeroWarning=document.getElementById('zeroWarning');
+
+  if(cell.value===0){
+    const lost=calculateZeroLoss(cell);
+    zeroWarning.style.display='block';
+    zeroWarning.innerHTML=`ZERO EVENT: mining this cell seals its row, column, and diagonals.<br>${lost.toLocaleString()} ANOVA may be lost to the void.`;
+  }else{
+    zeroWarning.style.display='none';
+  }
+
+  const v=cell.value;
+  const fastDays=Math.max(1,Math.ceil(v/38));
+  const fastDestroyed=Math.min(v,Math.ceil(v*.42));
+  const fastExtracted=v-fastDestroyed;
+
+  const mediumDays=Math.max(1,Math.ceil(v/24));
+  const mediumDestroyed=Math.min(v,Math.ceil(v*.20));
+  const mediumExtracted=v-mediumDestroyed;
+
+  const slowDays=Math.max(1,Math.ceil(v/12));
+  const slowDestroyed=0;
+  const slowExtracted=v;
+
+  document.getElementById('fastStats').innerHTML=`${fastDays} days<br><span style="color:var(--green)">+${fastExtracted}</span> extracted<br><span style="color:var(--red)">-${fastDestroyed}</span> destroyed`;
+  document.getElementById('mediumStats').innerHTML=`${mediumDays} days<br><span style="color:var(--green)">+${mediumExtracted}</span> extracted<br><span style="color:var(--red)">-${mediumDestroyed}</span> destroyed`;
+  document.getElementById('slowStats').innerHTML=`${slowDays} days<br><span style="color:var(--green)">+${slowExtracted}</span> extracted<br><span style="color:var(--red)">-${slowDestroyed}</span> destroyed`;
+}
+
+function closeMiningPopup(){
+  document.getElementById('overlay').style.display='none';
+  document.getElementById('miningPopup').style.display='none';
+  gameState.selectedCell=null;
+}
+
+function selectMiningSpeed(speed){
+  const team=selectedTeam();
+  const cell=gameState.moons[gameState.selectedMoon][gameState.selectedCell];
+  if(!team||!cell)return;
+
+  let days=1,extracted=0,destroyed=0;
+  const v=cell.value;
+
+  if(v===0){
+    const lost=calculateZeroLoss(cell);
+    gameState.totalLost+=lost;
+    sealZeroLines(cell);
+    extracted=0;
+    destroyed=0;
+    days=1;
+  }else if(speed==='fast'){
+    days=Math.max(1,Math.ceil(v/38));
+    destroyed=Math.min(v,Math.ceil(v*.42));
+    extracted=v-destroyed;
+  }else if(speed==='medium'){
+    days=Math.max(1,Math.ceil(v/24));
+    destroyed=Math.min(v,Math.ceil(v*.20));
+    extracted=v-destroyed;
+  }else{
+    days=Math.max(1,Math.ceil(v/12));
+    destroyed=0;
+    extracted=v;
+  }
+
+  team.speedChoices[speed]++;
+  team.extracted+=extracted;
+  team.destroyed+=destroyed;
+  team.totalPotential+=v;
+  team.status='mining';
+  team.freeDay=gameState.currentDay+days;
+
+  cell.mined=true;
+  cell.minedBy=team.id;
+
+  closeMiningPopup();
+  advanceClock();
+}
+
+function calculateZeroLoss(cell){
+  let lost=0;
+  const cells=Object.values(gameState.moons[cell.moon]);
+  cells.forEach(c=>{
+    if(c.id===cell.id||c.mined||c.closed)return;
+    if(c.row===cell.row||c.col===cell.col||c.row===c.col||c.row+c.col===8){
+      lost+=c.value;
+    }
+  });
+  return lost;
+}
+
+function sealZeroLines(cell){
+  const cells=Object.values(gameState.moons[cell.moon]);
+  cells.forEach(c=>{
+    if(c.id===cell.id||c.mined||c.closed)return;
+    if(c.row===cell.row||c.col===cell.col||c.row===c.col||c.row+c.col===8){
+      c.closed=true;
+    }
+  });
+}
+
+function passTurn(){
+  const team=selectedTeam();
+  if(!team)return;
+  if(team.status!=='ready')return;
+  team.status='mining';
+  team.freeDay=gameState.currentDay+1;
+  advanceClock();
+}
+
+function advanceClock(){
+  if(!gameState.teams.length)return;
+  gameState.teams.forEach(t=>{
+    if(t.status!=='ready'&&t.freeDay<=gameState.currentDay)t.status='ready';
+  });
+  const nextDay=Math.min(...gameState.teams.filter(t=>t.status!=='ready').map(t=>t.freeDay));
+  if(gameState.teams.every(t=>t.status!=='ready') && Number.isFinite(nextDay)){
+    gameState.currentDay=nextDay;
+  }
+  gameState.teams.forEach(t=>{
+    if(t.status!=='ready'&&t.freeDay<=gameState.currentDay)t.status='ready';
+  });
+  const ready=gameState.teams.find(t=>t.status==='ready');
+  if(ready){
+    gameState.selectedTeam=ready.id;
+    gameState.selectedMoon=ready.moon;
+  }
+  renderAll();
+  if(noCellsRemain())endGame();
+}
+
+function noCellsRemain(){
+  return !Object.values(gameState.moons).some(moonCells=>
+    Object.values(moonCells).some(c=>!c.mined&&!c.closed)
+  );
+}
+
+function toggleValues(){
+  showingValues=!showingValues;
+  document.getElementById('toggleValuesBtn').textContent=showingValues?'Hide Values':'Show Values';
+  renderBoard();
+}
+
+function endGame(){
+  if(gameState.gameOver)return;
+  gameState.gameOver=true;
+  document.getElementById('overlay').style.display='block';
+  document.getElementById('winnerBanner').style.display='block';
+
+  const sorted=gameState.teams.slice().sort((a,b)=>(b.extracted-b.destroyed)-(a.extracted-a.destroyed));
+  if(!sorted.length){
+    document.getElementById('winnerName').textContent='No teams joined.';
+    document.getElementById('finalScores').innerHTML='';
+    return;
+  }
+  const winner=sorted[0];
+  document.getElementById('winnerName').innerHTML=`<span style="color:${winner.color}">●</span> ${winner.name} wins with ${winner.extracted-winner.destroyed} net ANOVA`;
+  document.getElementById('finalScores').innerHTML=sorted.map(t=>{
+    const net=t.extracted-t.destroyed;
+    return `<div class="final-row">
+      <span style="color:${t.color}">●</span> ${t.name}: 
+      <span style="color:var(--green)">+${t.extracted}</span> mined,
+      <span style="color:var(--red)">-${t.destroyed}</span> destroyed,
+      Moon ${t.moon},
+      <strong style="color:${net>=0?'var(--green)':'var(--red)'}">${net} net</strong>
+    </div>`;
+  }).join('');
+}
+
+function resetGame(){
+  document.getElementById('overlay').style.display='none';
+  document.getElementById('winnerBanner').style.display='none';
+  gameState={
+    teams:[],
+    moons:{},
+    selectedTeam:null,
+    selectedMoon:'A',
+    selectedCell:null,
+    currentDay:1,
+    totalLost:0,
+    gameOver:false,
+    log:[]
+  };
+  showingValues=true;
+  initializeGame();
+  renderAll();
+}
+
+function saveGame(){
+  const blob=new Blob([JSON.stringify({version:4,gameState,showingValues},null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`anova-lunar-save-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function loadGame(event){
+  const file=event.target.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const save=JSON.parse(e.target.result);
+      if(!save.gameState)throw new Error('Invalid save file.');
+      gameState=save.gameState;
+      showingValues=save.showingValues!==false;
+      renderAll();
+    }catch(err){
+      alert('Load failed: '+err.message);
+    }
+  };
+  reader.readAsText(file);
+  event.target.value='';
+}
+
+document.getElementById('teamNameInput').addEventListener('keypress',e=>{
+  if(e.key==='Enter')createTeam();
+});
+
+initializeGame();
+renderAll();
+</script>
+</body>
+</html>
