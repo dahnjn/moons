@@ -2,1153 +2,761 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>ANOVA — Lunar Mining</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<title>ANOVA Planet</title>
+<style>
+  :root {
+    --mono: ui-monospace, 'SF Mono', 'Cascadia Code', 'Fira Mono', monospace;
+    --sans: system-ui, -apple-system, sans-serif;
+  }
+</style>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --bg:#030407;
-  --panel:#0b0e13;
-  --panel2:#111722;
-  --line:#263241;
-  --line2:#415064;
-  --white:#f4f7fb;
-  --muted:#8190a3;
-  --cyan:#7df9ff;
-  --red:#ff4d5e;
-  --green:#35ff9c;
-  --amber:#ffcc66;
-}
-body{
-  font-family:'IBM Plex Sans',sans-serif;
-  background:
-    radial-gradient(circle at 20% 0%,rgba(80,120,160,.16),transparent 34%),
-    radial-gradient(circle at 80% 20%,rgba(125,249,255,.08),transparent 28%),
-    linear-gradient(180deg,#05070b 0%,#020305 100%);
-  color:var(--white);
-  height:100vh;
-  overflow:hidden;
-}
-.game-container{
-  max-width:1520px;
-  height:100vh;
-  margin:0 auto;
-  padding:12px;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-header{
-  border:1px solid rgba(255,255,255,.08);
-  background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.025));
-  border-radius:18px;
-  padding:12px 18px;
-  box-shadow:0 20px 60px rgba(0,0,0,.35);
-}
-.topline{
-  display:grid;
-  grid-template-columns:1fr auto 1fr;
-  align-items:center;
-  gap:18px;
-}
-.brand{
-  font-family:'IBM Plex Mono',monospace;
-  font-size:.72rem;
-  letter-spacing:.28em;
-  color:var(--muted);
-  text-transform:uppercase;
-}
-h1{
-  font-family:'IBM Plex Mono',monospace;
-  font-size:3.7rem;
-  letter-spacing:.42em;
-  line-height:.9;
-  font-weight:700;
-  color:#fff;
-  text-shadow:0 0 22px rgba(125,249,255,.35);
-}
-.header-stats{
-  margin-top:12px;
-  display:grid;
-  grid-template-columns:repeat(5,1fr);
-  gap:10px;
-}
-.stat-box{
-  background:rgba(255,255,255,.035);
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:12px;
-  padding:8px 10px;
-}
-.stat-label{
-  font-family:'IBM Plex Mono',monospace;
-  font-size:.62rem;
-  color:var(--muted);
-  letter-spacing:.14em;
-  text-transform:uppercase;
-}
-.stat-value{
-  font-family:'IBM Plex Mono',monospace;
-  font-size:1.65rem;
-  font-weight:700;
-  margin-top:2px;
-}
-.main-layout{
-  flex:1;
-  min-height:0;
-  display:grid;
-  grid-template-columns:270px 1fr 280px;
-  gap:12px;
-}
-.panel{
-  background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.018));
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:18px;
-  padding:14px;
-  overflow:auto;
-  box-shadow:0 20px 60px rgba(0,0,0,.35);
-}
-.panel-title{
-  font-family:'IBM Plex Mono',monospace;
-  font-size:.72rem;
-  color:var(--muted);
-  letter-spacing:.18em;
-  text-transform:uppercase;
-  margin-bottom:10px;
-}
-.create-team-form{
-  display:flex;
-  gap:7px;
-  margin-bottom:12px;
-}
-.create-team-form input{
-  min-width:0;
-  flex:1;
-  padding:10px;
-  background:#06080c;
-  color:#fff;
-  border:1px solid var(--line);
-  border-radius:9px;
-  font-family:'IBM Plex Mono',monospace;
-}
-.create-team-form input:focus{outline:none;border-color:var(--cyan)}
-.btn{
-  border:1px solid rgba(255,255,255,.14);
-  border-radius:9px;
-  padding:9px 12px;
-  font-family:'IBM Plex Mono',monospace;
-  font-weight:700;
-  font-size:.72rem;
-  cursor:pointer;
-  transition:.18s ease;
-  background:#121925;
-  color:#fff;
-}
-.btn:hover{
-  transform:translateY(-1px);
-  border-color:var(--cyan);
-}
-.btn-primary{
-  background:#fff;
-  color:#030407;
-}
-.btn-danger{
-  color:var(--red);
-  border-color:rgba(255,77,94,.55);
-  background:rgba(255,77,94,.08);
-}
-.team-list{display:flex;flex-direction:column;gap:8px}
-.team-card{
-  border:1px solid rgba(255,255,255,.08);
-  background:rgba(255,255,255,.035);
-  border-radius:14px;
-  padding:10px;
-  cursor:pointer;
-}
-.team-card.active{
-  border-color:var(--cyan);
-  box-shadow:0 0 0 1px rgba(125,249,255,.25),0 0 22px rgba(125,249,255,.12);
-}
-.team-card.mining{opacity:.65}
-.team-name{
-  display:flex;
-  align-items:center;
-  gap:7px;
-  font-weight:700;
-  margin-bottom:7px;
-}
-.team-dot{
-  width:10px;
-  height:10px;
-  border-radius:50%;
-  display:inline-block;
-}
-.team-status{
-  margin-left:auto;
-  font-family:'IBM Plex Mono',monospace;
-  font-size:.56rem;
-  color:var(--muted);
-  border:1px solid rgba(255,255,255,.1);
-  border-radius:999px;
-  padding:2px 6px;
-}
-.team-stats{
-  font-family:'IBM Plex Mono',monospace;
-  font-size:.68rem;
-  color:var(--muted);
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:4px;
-}
-.travel-box{
-  margin-top:14px;
-  padding:12px;
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:14px;
-  background:rgba(0,0,0,.18);
-}
-.travel-buttons{
-  display:grid;
-  grid-template-columns:1fr;
-  gap:7px;
-}
-.moon-stage{
-  position:relative;
-  background:
-    radial-gradient(circle at 50% 48%,rgba(125,249,255,.06),transparent 42%),
-    linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.015));
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:18px;
-  overflow:hidden;
-  box-shadow:0 20px 60px rgba(0,0,0,.42);
-  padding:16px;
-  display:grid;
-  grid-template-rows:auto 1fr;
-  gap:14px;
-}
-.moons-row{
-  display:flex;
-  align-items:flex-end;
-  justify-content:center;
-  gap:34px;
-  min-height:152px;
-  padding:8px 6px 0;
-}
-.moon-select{
-  background:transparent;
-  border:none;
-  cursor:pointer;
-  color:#fff;
-  text-align:center;
-  position:relative;
-  opacity:.72;
-  transition:.18s ease;
-}
-.moon-select:hover,.moon-select.active{opacity:1;transform:translateY(-2px)}
-.moon-name{
-  font-family:'IBM Plex Mono',monospace;
-  font-size:.75rem;
-  letter-spacing:.12em;
-  margin-top:8px;
-  color:#c9d4e2;
-}
-.moon-sub{
-  font-family:'IBM Plex Mono',monospace;
-  font-size:.58rem;
-  color:var(--muted);
-  margin-top:3px;
-}
-.moon-orb{
-  margin:auto;
-  border-radius:50%;
-  position:relative;
-  overflow:hidden;
-  background:
-    radial-gradient(circle at 31% 24%,rgba(255,255,255,.9),rgba(230,235,238,.75) 11%,rgba(150,157,165,.8) 31%,rgba(72,78,88,.95) 58%,rgba(24,27,33,1) 100%);
-  box-shadow:
-    inset -28px -32px 42px rgba(0,0,0,.78),
-    inset 18px 14px 30px rgba(255,255,255,.18),
-    0 0 34px rgba(180,210,230,.15);
-}
-.moon-orb:before{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:
-    radial-gradient(circle at 22% 36%,rgba(30,32,36,.6) 0 5%,transparent 6%),
-    radial-gradient(circle at 64% 30%,rgba(40,42,46,.5) 0 6%,transparent 7%),
-    radial-gradient(circle at 48% 66%,rgba(25,26,30,.58) 0 8%,transparent 9%),
-    radial-gradient(circle at 76% 62%,rgba(210,215,220,.16) 0 5%,transparent 6%),
-    radial-gradient(circle at 34% 72%,rgba(20,22,25,.45) 0 4%,transparent 5%);
-  mix-blend-mode:multiply;
-}
-.moon-orb:after{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:
-    linear-gradient(115deg,rgba(255,255,255,.18),transparent 30%,rgba(0,0,0,.3) 72%);
-}
-.moon-a .moon-orb{width:74px;height:74px}
-.moon-b .moon-orb{width:105px;height:105px}
-.moon-c .moon-orb{width:138px;height:138px}
-.moon-select.active .moon-orb{
-  outline:1px solid rgba(255,255,255,.5);
-}
-.board-wrap{
-  min-height:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-.board-shell{
-  position:relative;
-  width:min(620px,100%);
-  aspect-ratio:1;
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:
-    radial-gradient(circle at 35% 28%,rgba(255,255,255,.18),transparent 16%),
-    radial-gradient(circle at 45% 52%,rgba(255,255,255,.05),transparent 42%),
-    radial-gradient(circle at 50% 50%,#9ca3aa 0%,#5e6671 38%,#252a31 69%,#08090d 100%);
-  box-shadow:
-    inset -90px -70px 120px rgba(0,0,0,.82),
-    inset 42px 35px 70px rgba(255,255,255,.16),
-    0 0 90px rgba(125,249,255,.08);
-}
-.board-shell:before{
-  content:"";
-  position:absolute;
-  inset:0;
-  border-radius:50%;
-  background:
-    radial-gradient(circle at 24% 34%,rgba(20,22,27,.32) 0 6%,transparent 7%),
-    radial-gradient(circle at 70% 31%,rgba(10,12,15,.28) 0 7%,transparent 8%),
-    radial-gradient(circle at 53% 73%,rgba(30,32,36,.36) 0 9%,transparent 10%),
-    radial-gradient(circle at 76% 68%,rgba(255,255,255,.09) 0 5%,transparent 6%),
-    radial-gradient(circle at 35% 70%,rgba(12,13,16,.25) 0 5%,transparent 6%);
-  pointer-events:none;
-}
-.board-shell:after{
-  content:"";
-  position:absolute;
-  inset:-2px;
-  border-radius:50%;
-  border:1px solid rgba(255,255,255,.18);
-  box-shadow:var(--moonGlow,0 0 0 rgba(0,0,0,0));
-  pointer-events:none;
-}
-.grid{
-  width:73%;
-  height:73%;
-  display:grid;
-  grid-template-columns:repeat(9,1fr);
-  grid-template-rows:repeat(9,1fr);
-  gap:6px;
-  position:relative;
-  z-index:2;
-}
-.cell{
-  border:1px solid rgba(255,255,255,.28);
-  background:rgba(5,8,12,.58);
-  color:#dce7f3;
-  border-radius:8px;
-  font-family:'IBM Plex Mono',monospace;
-  font-size:.66rem;
-  font-weight:700;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  cursor:pointer;
-  backdrop-filter:blur(6px);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.12);
-  transition:.16s ease;
-}
-.cell:hover{
-  transform:scale(1.12);
-  border-color:#fff;
-  z-index:4;
-}
-.cell.zero{
-  color:#05070b;
-  background:rgba(255,255,255,.86);
-  border-color:#fff;
-}
-.cell.mined{
-  color:#fff;
-  opacity:.96;
-  cursor:help;
-  transform:none;
-}
-.cell.closed{
-  opacity:.32;
-  cursor:not-allowed;
-  background:rgba(0,0,0,.75);
-}
+body{font-family:var(--sans);background:#0a0a0f;color:#e0e0e0;height:100vh;overflow:hidden;display:flex;flex-direction:column}
+.hdr{text-align:center;padding:8px 12px 4px}
+h1{font-family:var(--mono);font-size:3rem;font-weight:700;letter-spacing:0.3em;color:#fff;text-shadow:0 0 10px #fff,0 0 25px #00ffff,0 0 40px #00ffff}
+.stats-row{display:flex;justify-content:space-around;align-items:center;margin-top:6px;flex-wrap:wrap;gap:8px}
+.stat-col{display:flex;flex-direction:column;align-items:center;gap:2px}
+.stat-lbl{font-family:var(--mono);font-size:0.65rem;color:#888;letter-spacing:0.1em}
+.stat-val{font-family:var(--mono);font-size:1.6rem;font-weight:700}
+.sv-day{color:#00ffff}.sv-rem{color:#ffff00}.sv-mine{color:#00ff88}.sv-dest{color:#ff4444}.sv-lost{color:#888}
+.cbar-row{display:flex;align-items:center;gap:10px;margin:4px 12px 0}
+.cbar-wrap{flex:1;height:20px;background:rgba(255,255,255,0.08);border-radius:5px;overflow:hidden;border:1px solid rgba(255,255,255,0.2);display:flex}
+.cseg{height:100%;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:0.7rem;font-weight:700;color:#000;min-width:2px}
+.cpen{font-family:var(--mono);font-size:1.3rem;font-weight:700;color:#ff4444;white-space:nowrap;min-width:44px}
+.main{display:grid;grid-template-columns:200px 1fr 230px;gap:8px;flex:1;min-height:0;padding:0 8px 8px}
+.panel{background:#12121a;border-radius:10px;padding:10px;border:1px solid #2a2a3a;overflow-y:auto;display:flex;flex-direction:column}
+.ptitle{font-family:var(--mono);font-size:0.65rem;color:#888;letter-spacing:0.15em;margin-bottom:8px;text-transform:uppercase}
+.tinput-row{display:flex;gap:5px;margin-bottom:8px}
+.tinput-row input{flex:1;padding:6px 8px;background:#1a1a24;border:1px solid #3a3a4a;border-radius:5px;color:#fff;font-family:var(--mono);font-size:0.75rem}
+.tinput-row input:focus{outline:none;border-color:#00ffff}
+.add-btn{padding:6px 10px;background:linear-gradient(135deg,#00ffff,#00cccc);border:none;border-radius:5px;color:#000;font-family:var(--mono);font-size:0.8rem;font-weight:700;cursor:pointer}
+.tlist{display:flex;flex-direction:column;gap:5px}
+.tcard{background:#1a1a24;border-radius:6px;padding:7px 9px;border:2px solid transparent;cursor:pointer;transition:all 0.2s}
+.tcard:hover{border-color:#3a3a5a}
+.tcard.active{border-color:#00ffff;box-shadow:0 0 14px rgba(0,255,255,0.15)}
+.tcard.busy{opacity:0.6}
+.tcname{display:flex;align-items:center;gap:5px;font-size:0.8rem;font-weight:600;margin-bottom:3px}
+.tcdot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.tcbadge{font-size:0.55rem;padding:1px 4px;border-radius:3px;background:#2a2a3a;color:#888}
+.tcbadge.ready{background:#00ff8833;color:#00ff88}
+.tcbadge.mining{background:#ffff0033;color:#ffff00}
+.tcbadge.travel{background:#ff880033;color:#ff8800}
+.tcstats{font-family:var(--mono);font-size:0.65rem;color:#888;display:flex;gap:10px}
+.tcext{color:#00ff88}.tcdest{color:#ff4444}
+.tcreg{font-family:var(--mono);font-size:0.6rem;color:#666;margin-top:2px}
+.planet-area{background:#12121a;border-radius:10px;border:1px solid #2a2a3a;overflow-y:auto;display:flex;flex-direction:column;align-items:center;padding:10px;gap:4px;background-color:#0d0d18}
+.region-wrap{width:100%;display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.07)}
+.region-wrap.north{background:rgba(100,180,255,0.04);border-color:rgba(100,180,255,0.18)}
+.region-wrap.equator{background:rgba(255,200,100,0.04);border-color:rgba(255,200,100,0.18)}
+.region-wrap.south{background:rgba(180,100,255,0.04);border-color:rgba(180,100,255,0.18)}
+.region-hdr{display:flex;align-items:center;justify-content:space-between;width:100%}
+.region-lbl{font-family:'IBM Plex Mono',monospace;font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase}
+.travel-btn{padding:3px 10px;background:rgba(255,136,0,0.12);border:1px solid #ff8800;border-radius:5px;color:#ff8800;font-family:'IBM Plex Mono',monospace;font-size:0.65rem;cursor:pointer;white-space:nowrap;transition:all 0.2s}
+.travel-btn:hover{background:rgba(255,136,0,0.25)}
+.divider{font-family:'IBM Plex Mono',monospace;font-size:0.6rem;color:#333;letter-spacing:0.3em;padding:2px 0}
+.grid-row{display:flex;gap:5px;justify-content:center}
+.cell{width:38px;height:38px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-size:0.65rem;cursor:pointer;transition:all 0.15s;border:2px solid rgba(255,255,255,0.6);background:rgba(255,255,255,0.38);color:#1a1a2e;font-weight:700;position:relative;user-select:none}
+.cell:hover{transform:scale(1.12);z-index:5}
+.cell.inactive{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.15);cursor:not-allowed;filter:grayscale(70%)}
+.cell.inactive:hover{transform:none}
+.cell.selected{transform:scale(1.2);border:3px solid #fff;z-index:6;background:rgba(255,255,255,0.22)}
+.cell.mined{cursor:default;background:rgba(20,20,30,0.9);border-width:3px}
+.cell.mined:hover{transform:none}
+.cell.closed{opacity:0.45;cursor:not-allowed;filter:grayscale(100%);background:rgba(10,10,10,0.9);border-color:rgba(255,255,255,0.12)}
 .cell.closed:hover{transform:none}
-.cell .hidden-id{display:none}
-.cell.hide-values{
-  color:#aeb9c7;
+.cval{display:none;font-size:0.95rem;font-weight:900;line-height:1}
+.cell.showv .cval{display:block}
+.cell.showv .cid{display:none}
+.cell.mined .cval{display:block!important}
+.cell.mined .cid{display:none!important}
+.cell.closed .cval{display:block!important;color:#fff!important;font-size:0.85rem!important}
+.cell.closed .cid{display:none!important}
+/* Right panel */
+.lb-entry{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#1a1a24;border-radius:6px;margin-bottom:5px;font-family:var(--mono);font-size:1.05rem;font-weight:600;gap:10px;overflow:hidden}
+.lb-entry.leader{border:2px solid #00ff88}
+.lb-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.lb-right{display:flex;align-items:center;gap:6px;flex-shrink:0;white-space:nowrap}
+.lb-pen{color:#ff8800}
+.cvis{margin-top:6px;max-height:100px;overflow-y:auto}
+.cvblock{margin-bottom:5px;padding:5px;background:#1a1a24;border-radius:4px;border-left:3px solid #ff4444}
+.cvhdr{font-family:var(--mono);font-size:0.65rem;color:#888;margin-bottom:3px;display:flex;justify-content:space-between}
+.cvbar{height:10px;background:#2a2a3a;border-radius:2px;display:flex;overflow:hidden}
+.cvseg{height:100%}
+.panel-bot{margin-top:auto;padding-top:8px;border-top:1px solid #2a2a3a;display:flex;flex-direction:column;gap:5px}
+.pbrow{display:flex;gap:5px}
+.pbtn{flex:1;padding:5px 6px;background:rgba(20,20,30,0.8);border:1px solid #4a4a6a;border-radius:5px;color:#aaa;font-family:var(--mono);font-size:0.65rem;cursor:pointer;text-align:center;transition:all 0.2s}
+.pbtn:hover{border-color:#00ffff;color:#fff}
+.pbtn.active{background:rgba(0,255,255,0.12);border-color:#00ffff;color:#00ffff}
+.endbtn{width:100%;padding:6px;background:#ff444418;color:#ff4444;border:1px solid #ff4444;border-radius:5px;font-family:var(--mono);font-size:0.7rem;cursor:pointer}
+.endbtn:hover{background:#ff444430}
+/* Modal backdrop */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(5px)}
+/* Mining popup */
+.mpopup{background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:16px;padding:24px;min-width:500px;position:relative;animation:popIn 0.28s ease-out}
+@keyframes popIn{from{transform:scale(0.85);opacity:0}to{transform:scale(1);opacity:1}}
+.xbtn{position:absolute;top:10px;right:12px;background:transparent;border:none;color:#555;font-size:1rem;cursor:pointer;font-family:var(--mono)}
+.xbtn:hover{color:#aaa}
+.mph{text-align:center;margin-bottom:14px}
+.mpcell{font-family:var(--mono);font-size:0.9rem;color:#888;margin-bottom:4px}
+.mpanova{font-family:var(--mono);font-size:2.8rem;font-weight:700}
+.mpteam{text-align:center;font-family:var(--mono);font-size:0.85rem;color:#888;margin-bottom:18px}
+.speedopts{display:flex;gap:10px}
+.spdbtn{flex:1;background:linear-gradient(180deg,#2a2a3a,#1a1a2a);border:2px solid #fff;border-radius:10px;padding:14px 10px;cursor:pointer;text-align:center;transition:all 0.2s}
+.spdbtn:hover{transform:translateY(-4px)}
+.spdbtn.fast:hover{background:linear-gradient(180deg,#3a2a2a,#2a1a1a);border-color:#ff4444;box-shadow:0 6px 18px rgba(255,68,68,0.3)}
+.spdbtn.medium:hover{background:linear-gradient(180deg,#3a3a2a,#2a2a1a);border-color:#ffaa00;box-shadow:0 6px 18px rgba(255,170,0,0.3)}
+.spdbtn.slow:hover{background:linear-gradient(180deg,#2a3a2a,#1a2a1a);border-color:#00ff88;box-shadow:0 6px 18px rgba(0,255,136,0.3)}
+.spdtitle{font-family:var(--mono);font-size:0.9rem;font-weight:700;color:#fff;margin-bottom:6px}
+.spdicon{font-size:1.8rem;margin-bottom:6px}
+.spdstats{font-family:var(--mono);font-size:0.7rem;color:#888;line-height:1.5}
+/* Void popup */
+.vpopup{background:#08000a;border:3px solid #ff4444;border-radius:16px;padding:36px 52px;text-align:center;box-shadow:0 0 50px rgba(255,68,68,0.35);animation:popIn 0.35s ease-out;max-width:440px}
+.vskull{font-size:3.5rem;margin-bottom:10px;animation:pulse 1.5s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+.vtitle{font-family:var(--mono);font-size:1.8rem;font-weight:700;color:#ff4444;letter-spacing:0.2em;margin-bottom:6px}
+.vcell{font-family:var(--mono);font-size:0.9rem;color:#888;margin-bottom:3px}
+.vteam{font-family:var(--mono);font-size:0.9rem;color:#aaa;margin-bottom:18px}
+.vlostlbl{font-family:var(--mono);font-size:0.7rem;color:#888;letter-spacing:0.15em;margin-bottom:5px}
+.vlostamt{font-family:var(--mono);font-size:3rem;font-weight:700;color:#ff4444;margin-bottom:24px}
+.vack{padding:10px 32px;background:transparent;border:2px solid #ff4444;border-radius:8px;color:#ff4444;font-family:var(--mono);font-size:0.85rem;cursor:pointer;transition:all 0.2s;letter-spacing:0.1em}
+.vack:hover{background:rgba(255,68,68,0.12);color:#fff}
+/* Region start picker */
+.rpopup{background:#0a0a1e;border:2px solid #00ffff;border-radius:16px;padding:32px 48px;text-align:center;box-shadow:0 0 35px rgba(0,255,255,0.18);animation:popIn 0.28s ease-out}
+.rptitle{font-family:var(--mono);font-size:1.3rem;font-weight:700;color:#fff;margin-bottom:6px}
+.rpsub{font-family:var(--mono);font-size:0.8rem;color:#888;margin-bottom:22px}
+.rpopts{display:flex;gap:12px}
+.rpick{padding:18px 22px;background:#1a1a2e;border:2px solid #3a3a5a;border-radius:12px;cursor:pointer;transition:all 0.2s;text-align:center;min-width:100px}
+.rpick:hover{border-color:#00ffff;transform:translateY(-4px)}
+.rpick-icon{font-size:1.8rem;margin-bottom:6px}
+.rpick-name{font-family:var(--mono);font-size:0.85rem;font-weight:700;color:#fff}
+/* Travel popup */
+.tpopup{background:#0a0a1a;border:2px solid #ff8800;border-radius:16px;padding:32px 48px;text-align:center;box-shadow:0 0 35px rgba(255,136,0,0.2);animation:popIn 0.28s ease-out;max-width:400px}
+.tptitle{font-family:var(--mono);font-size:1.3rem;font-weight:700;color:#ff8800;margin-bottom:10px}
+.tpsub{font-family:var(--mono);font-size:0.85rem;color:#aaa;line-height:1.7;margin-bottom:22px}
+.tpopts{display:flex;gap:12px;justify-content:center}
+.tpbtn{padding:14px 24px;background:#1a1a2e;border:2px solid #3a3a5a;border-radius:10px;cursor:pointer;transition:all 0.2s;text-align:center;font-family:var(--mono)}
+.tpbtn.go{border-color:#ff8800}
+.tpbtn.go:hover{background:rgba(255,136,0,0.15);transform:translateY(-3px)}
+.tpbtn.cancel{border-color:#555;color:#888}
+.tpbtn.cancel:hover{border-color:#888;color:#fff}
+.tpbtn-icon{font-size:1.6rem;margin-bottom:6px}
+.tpbtn-name{font-size:0.85rem;font-weight:700;color:#fff}
+.tpbtn-cost{font-size:0.7rem;color:#888;margin-top:3px}
+/* Mining animation */
+.animscreen{position:fixed;inset:0;background:rgba(0,0,0,0.93);z-index:300;display:flex;align-items:center;justify-content:center}
+.animcontent{text-align:center;position:relative}
+.adrill{font-size:5rem;animation:drillB 0.3s ease-in-out infinite}
+@keyframes drillB{0%,100%{transform:translateY(0) rotate(-10deg)}50%{transform:translateY(-18px) rotate(10deg)}}
+.asparks{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
+.spark{position:absolute;width:7px;height:7px;border-radius:50%;animation:sparkFly 0.6s ease-out forwards}
+@keyframes sparkFly{0%{transform:translate(0,0) scale(1);opacity:1}100%{transform:translate(var(--tx),var(--ty)) scale(0);opacity:0}}
+.ares{margin-top:28px;font-family:var(--mono);font-size:1.4rem;color:#fff;opacity:0;transform:translateY(18px);animation:resApp 0.5s ease-out 1s forwards}
+@keyframes resApp{to{opacity:1;transform:translateY(0)}}
+.ares-ext{color:#00ff88;font-size:1.8rem;font-weight:700}
+.ares-dest{color:#ff4444;font-size:1.1rem;margin-top:6px}
+/* Penalty */
+.pennotif{position:fixed;top:14px;left:50%;transform:translateX(-50%) translateY(-120px);border:3px solid #ff4444;border-radius:10px;padding:14px 32px;z-index:400;box-shadow:0 6px 28px rgba(255,68,68,0.45);animation:penIn 0.45s ease-out forwards;min-width:340px;text-align:center;backdrop-filter:blur(8px)}
+@keyframes penIn{to{transform:translateX(-50%) translateY(0)}}
+.pennotif.hiding{animation:penOut 0.45s ease-in forwards}
+@keyframes penOut{to{transform:translateX(-50%) translateY(-120px);opacity:0}}
+.penicon{font-size:1.8rem;margin-bottom:5px}
+.pentitle{font-family:var(--mono);font-size:0.9rem;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:5px}
+.penteam{font-family:var(--mono);font-size:1.2rem;font-weight:700;color:#ffff00;margin-bottom:5px}
+.penamt{font-family:var(--mono);font-size:1.6rem;font-weight:700;color:#fff}
+.penreason{font-family:var(--mono);font-size:0.65rem;color:#ffcccc;margin-top:5px}
+/* Winner */
+.winbg{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:500}
+.winbox{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#1a1a24;border:3px solid #00ff88;border-radius:16px;padding:36px 52px;text-align:center;z-index:501;box-shadow:0 0 50px rgba(0,255,136,0.4);max-width:90vw;max-height:90vh;overflow-y:auto}
+.winname{font-size:1.8rem;margin-bottom:22px;font-weight:700}
+.wintbl{width:100%;border-collapse:collapse;margin:12px 0;font-family:var(--mono);font-size:0.85rem}
+.wintbl th{text-align:left;color:#888;padding:4px 8px;border-bottom:1px solid #3a3a4a;font-weight:400}
+.wintbl td{padding:6px 8px;border-bottom:1px solid #2a2a3a}
+.ngbtn{padding:10px 28px;background:linear-gradient(135deg,#00ffff,#00cccc);border:none;border-radius:8px;color:#000;font-family:var(--mono);font-size:0.85rem;font-weight:700;cursor:pointer;margin-top:14px}
+/* Glitch */
+@keyframes glitch{
+  0%{opacity:1;transform:scale(1);filter:none}
+  10%{opacity:1;transform:scale(1.1) skewX(8deg);filter:hue-rotate(90deg) brightness(3)}
+  25%{opacity:0.7;transform:scale(0.95) skewX(-5deg) translateX(5px);filter:hue-rotate(180deg) brightness(2)}
+  45%{opacity:0.4;transform:scale(1.08) translateX(-7px);filter:brightness(6) saturate(0)}
+  65%{opacity:0.2;transform:scale(0.7);filter:brightness(10)}
+  85%{opacity:0.05;transform:scale(0.3) skewX(12deg);filter:brightness(16)}
+  100%{opacity:0;transform:scale(0);filter:brightness(0)}
 }
-.cell.hide-values .value{display:none}
-.cell.hide-values .hidden-id{display:inline}
-.info-section{margin-bottom:16px}
-.leaderboard-entry{
-  display:flex;
-  justify-content:space-between;
-  gap:10px;
-  border:1px solid rgba(255,255,255,.08);
-  background:rgba(255,255,255,.035);
-  border-radius:12px;
-  padding:10px;
-  margin-bottom:8px;
-  font-family:'IBM Plex Mono',monospace;
-  font-size:.88rem;
-}
-.small-note{
-  font-family:'IBM Plex Mono',monospace;
-  color:var(--muted);
-  font-size:.68rem;
-  line-height:1.45;
-}
-.controls{
-  margin-top:auto;
-  display:grid;
-  gap:8px;
-}
-.control-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.overlay{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.78);
-  z-index:90;
-  display:none;
-}
-.popup{
-  position:fixed;
-  left:50%;
-  top:50%;
-  transform:translate(-50%,-50%);
-  width:min(650px,92vw);
-  background:linear-gradient(180deg,#121a25,#070a0f);
-  border:1px solid rgba(255,255,255,.16);
-  border-radius:22px;
-  padding:24px;
-  z-index:100;
-  display:none;
-  box-shadow:0 40px 120px rgba(0,0,0,.75),0 0 44px rgba(125,249,255,.12);
-}
-.popup-x{
-  position:absolute;
-  top:12px;
-  right:14px;
-  background:transparent;
-  border:none;
-  color:var(--muted);
-  font-size:1.1rem;
-  cursor:pointer;
-}
-.popup-head{
-  text-align:center;
-  margin-bottom:18px;
-}
-.popup-title{
-  font-family:'IBM Plex Mono',monospace;
-  font-size:.8rem;
-  color:var(--muted);
-  letter-spacing:.18em;
-  text-transform:uppercase;
-}
-.popup-value{
-  margin-top:4px;
-  font-family:'IBM Plex Mono',monospace;
-  font-size:3rem;
-  font-weight:700;
-}
-.speed-options{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:12px;
-}
-.speed-btn{
-  border:1px solid rgba(255,255,255,.16);
-  background:rgba(255,255,255,.045);
-  color:#fff;
-  border-radius:16px;
-  padding:16px 12px;
-  cursor:pointer;
-  transition:.18s ease;
-}
-.speed-btn:hover{
-  transform:translateY(-4px);
-  border-color:#fff;
-}
-.speed-name{
-  font-family:'IBM Plex Mono',monospace;
-  font-size:1rem;
-  font-weight:700;
-  margin-bottom:10px;
-}
-.speed-stats{
-  font-family:'IBM Plex Mono',monospace;
-  font-size:.75rem;
-  color:var(--muted);
-  line-height:1.65;
-}
-.zero-warning{
-  color:var(--red);
-  text-align:center;
-  font-family:'IBM Plex Mono',monospace;
-  margin-top:12px;
-  line-height:1.5;
-}
-.winner-banner{
-  position:fixed;
-  left:50%;
-  top:50%;
-  transform:translate(-50%,-50%);
-  width:min(760px,92vw);
-  max-height:88vh;
-  overflow:auto;
-  background:linear-gradient(180deg,#121a25,#05070b);
-  border:1px solid rgba(255,255,255,.18);
-  border-radius:24px;
-  padding:28px;
-  z-index:110;
-  display:none;
-  box-shadow:0 40px 120px rgba(0,0,0,.8),0 0 70px rgba(125,249,255,.14);
-}
-.winner-name{
-  font-family:'IBM Plex Mono',monospace;
-  font-size:1.7rem;
-  font-weight:700;
-  margin-bottom:18px;
-}
-.final-row{
-  font-family:'IBM Plex Mono',monospace;
-  padding:9px 0;
-  border-bottom:1px solid rgba(255,255,255,.08);
-}
-@media(max-width:1100px){
-  body{overflow:auto;height:auto}
-  .game-container{height:auto}
-  .main-layout{grid-template-columns:1fr}
-  .header-stats{grid-template-columns:repeat(2,1fr)}
-  .topline{grid-template-columns:1fr;text-align:center}
-}
+.cell.glitch-out{animation:glitch 1.1s ease-in forwards;pointer-events:none}
 </style>
 </head>
 <body>
-<div class="game-container">
-  <header>
-    <div class="topline">
-      <div class="brand">Lunar Resource Simulation</div>
-      <h1>ANOVA</h1>
-      <div class="brand" style="text-align:right">Moon A → Moon B → Moon C</div>
+
+<div class="hdr" id="mainHdr">
+  <h1>ANOVA</h1>
+  <div class="stats-row">
+    <div class="stat-col"><span class="stat-lbl">DAY</span><span class="stat-val sv-day" id="svDay">1</span></div>
+    <div class="stat-col"><span class="stat-lbl">TOTAL REMAINING</span><span class="stat-val sv-rem" id="svRem">0</span></div>
+    <div class="stat-col"><span class="stat-lbl">TOTAL MINED</span><span class="stat-val sv-mine" id="svMine">0</span></div>
+    <div class="stat-col"><span class="stat-lbl">TOTAL DESTROYED</span><span class="stat-val sv-dest" id="svDest">0</span></div>
+    <div class="stat-col"><span class="stat-lbl">TOTAL LOST</span><span class="stat-val sv-lost" id="svLost">0</span></div>
+  </div>
+  <div class="cbar-row">
+    <div class="cbar-wrap" id="clusterBar"></div>
+    <div class="cpen" id="clusterPen">-10</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="panel">
+    <div class="ptitle">Teams</div>
+    <div class="tinput-row">
+      <input type="text" id="teamInput" placeholder="Team name..." maxlength="12">
+      <button class="add-btn" onclick="addTeam()">+</button>
     </div>
-    <div class="header-stats">
-      <div class="stat-box"><div class="stat-label">Day</div><div class="stat-value" id="dayValue" style="color:var(--cyan)">1</div></div>
-      <div class="stat-box"><div class="stat-label">Available</div><div class="stat-value" id="remainingValue" style="color:var(--amber)">0</div></div>
-      <div class="stat-box"><div class="stat-label">Mined</div><div class="stat-value" id="minedValue" style="color:var(--green)">0</div></div>
-      <div class="stat-box"><div class="stat-label">Destroyed</div><div class="stat-value" id="destroyedValue" style="color:var(--red)">0</div></div>
-      <div class="stat-box"><div class="stat-label">Lost</div><div class="stat-value" id="lostValue" style="color:var(--muted)">0</div></div>
+    <div class="tlist" id="teamList"></div>
+    <div class="panel-bot">
+      <div class="pbrow">
+        <button class="pbtn" id="btnVals" onclick="toggleVals()">SHOW VALUES</button>
+      </div>
+      <div class="pbrow">
+        <button class="pbtn" onclick="saveGame()">SAVE</button>
+        <label class="pbtn" style="cursor:pointer">LOAD<input type="file" id="loadFile" accept=".json" onchange="loadGame(event)" style="display:none"></label>
+      </div>
+      <button class="endbtn" onclick="endGame()">END GAME</button>
     </div>
-  </header>
+  </div>
 
-  <div class="main-layout">
-    <aside class="panel">
-      <div class="panel-title">Teams</div>
-      <div class="create-team-form">
-        <input type="text" id="teamNameInput" placeholder="Team name..." maxlength="12">
-        <button class="btn btn-primary" onclick="createTeam()">+</button>
-      </div>
-      <div id="teamList" class="team-list"></div>
+  <div class="planet-area" id="planetArea"></div>
 
-      <div class="travel-box">
-        <div class="panel-title">Transit</div>
-        <div class="small-note" style="margin-bottom:10px">
-          All teams begin on Moon A. Travel A ↔ B costs 10 days. Travel B ↔ C costs 30 days.
-        </div>
-        <div class="travel-buttons">
-          <button class="btn" onclick="travelSelectedTeam('A')">Travel to Moon A</button>
-          <button class="btn" onclick="travelSelectedTeam('B')">Travel to Moon B</button>
-          <button class="btn" onclick="travelSelectedTeam('C')">Travel to Moon C</button>
-        </div>
-      </div>
-    </aside>
-
-    <main class="moon-stage">
-      <div class="moons-row">
-        <button class="moon-select moon-a active" id="moonBtnA" onclick="selectMoon('A')">
-          <div class="moon-orb" id="orbA"></div>
-          <div class="moon-name">MOON A</div>
-          <div class="moon-sub">Small / Start</div>
-        </button>
-        <button class="moon-select moon-b" id="moonBtnB" onclick="selectMoon('B')">
-          <div class="moon-orb" id="orbB"></div>
-          <div class="moon-name">MOON B</div>
-          <div class="moon-sub">Medium / +10 Days</div>
-        </button>
-        <button class="moon-select moon-c" id="moonBtnC" onclick="selectMoon('C')">
-          <div class="moon-orb" id="orbC"></div>
-          <div class="moon-name">MOON C</div>
-          <div class="moon-sub">Large / +30 Days from B</div>
-        </button>
-      </div>
-      <div class="board-wrap">
-        <div class="board-shell" id="boardShell">
-          <div class="grid" id="grid"></div>
-        </div>
-      </div>
-    </main>
-
-    <aside class="panel" style="display:flex;flex-direction:column">
-      <div class="info-section">
-        <div class="panel-title">Leaderboard</div>
-        <div id="leaderboard"></div>
-      </div>
-
-      <div class="info-section">
-        <div class="panel-title">Selected Team</div>
-        <div id="selectedTeamInfo" class="small-note">Create or select a team.</div>
-      </div>
-
-      <div class="info-section">
-        <div class="panel-title">System Rules</div>
-        <div class="small-note">
-          Each moon uses a patterned 9×9 ANOVA field. Every row, column, and main diagonal contains exactly one zero. Mining a zero seals its row, column, and diagonals, sending those available resources to the void.
-        </div>
-      </div>
-
-      <div class="controls">
-        <div class="control-row">
-          <button class="btn" id="toggleValuesBtn" onclick="toggleValues()">Hide Values</button>
-          <button class="btn" onclick="passTurn()">Pass</button>
-        </div>
-        <div class="control-row">
-          <button class="btn" onclick="saveGame()">Save</button>
-          <label class="btn" style="text-align:center;cursor:pointer">Load<input type="file" id="loadGameInput" accept=".json" onchange="loadGame(event)" style="display:none"></label>
-        </div>
-        <button class="btn btn-danger" onclick="endGame()">End Game</button>
-      </div>
-    </aside>
+  <div class="panel">
+    <div class="ptitle">Leaderboard</div>
+    <div id="leaderboard"></div>
+    <div class="ptitle" style="margin-top:10px">Exhausted Clusters</div>
+    <div class="cvis" id="clusterVis"></div>
   </div>
 </div>
 
-<div class="overlay" id="overlay"></div>
-
-<div class="popup" id="miningPopup">
-  <button class="popup-x" onclick="closeMiningPopup()">✕</button>
-  <div class="popup-head">
-    <div class="popup-title" id="popupCellId">Moon A / A1</div>
-    <div class="popup-value" id="popupValue">0</div>
-    <div class="small-note" id="popupTeam"></div>
-  </div>
-  <div class="speed-options">
-    <button class="speed-btn" onclick="selectMiningSpeed('fast')">
-      <div class="speed-name" style="color:var(--red)">FAST</div>
-      <div class="speed-stats" id="fastStats"></div>
-    </button>
-    <button class="speed-btn" onclick="selectMiningSpeed('medium')">
-      <div class="speed-name" style="color:var(--amber)">MEDIUM</div>
-      <div class="speed-stats" id="mediumStats"></div>
-    </button>
-    <button class="speed-btn" onclick="selectMiningSpeed('slow')">
-      <div class="speed-name" style="color:var(--green)">SLOW</div>
-      <div class="speed-stats" id="slowStats"></div>
-    </button>
-  </div>
-  <div id="zeroWarning" class="zero-warning" style="display:none"></div>
+<!-- penalty notif (always in DOM) -->
+<div class="pennotif" id="penNotif" style="display:none">
+  <div class="penicon">⚠️</div>
+  <div class="pentitle">Cluster Penalty</div>
+  <div class="penteam" id="penTeam"></div>
+  <div class="penamt" id="penAmt"></div>
+  <div class="penreason" id="penReason"></div>
 </div>
 
-<div class="winner-banner" id="winnerBanner">
-  <div class="winner-name" id="winnerName"></div>
-  <div id="finalScores"></div>
-  <button class="btn btn-primary" onclick="resetGame()" style="margin-top:20px">New Game</button>
+<!-- winner (always in DOM) -->
+<div class="winbg" id="winBg" style="display:none"></div>
+<div class="winbox" id="winBox" style="display:none">
+  <div class="winname" id="winName"></div>
+  <div id="winScores"></div>
+  <button class="ngbtn" onclick="resetGame()">NEW GAME</button>
 </div>
+
+<!-- mining anim (always in DOM) -->
+<div class="animscreen" id="animScreen" style="display:none">
+  <div class="animcontent">
+    <div class="adrill">⛏️</div>
+    <div class="asparks" id="animSparks"></div>
+    <div class="ares" id="animRes"></div>
+  </div>
+</div>
+
+<!-- all modal popups rendered by JS into #modalMount -->
+<div id="modalMount"></div>
 
 <script>
-const teamColors=[
-  '#7DF9FF','#FF2E88','#FFFFFF','#2DFF72','#FFB000',
-  '#6B7CFF','#FF4D4D','#9DFF00','#00D1FF','#C084FC','#FF7A1A','#B9F2FF'
-];
-
-const moonInfo={
-  A:{name:'Moon A',size:'Small',travel:{B:10},seed:17,multiplier:.82},
-  B:{name:'Moon B',size:'Medium',travel:{A:10,C:30},seed:43,multiplier:1.05},
-  C:{name:'Moon C',size:'Large',travel:{B:30},seed:79,multiplier:1.28}
+// ── Config ────────────────────────────────────────────────────────────────────
+const TEAM_COLORS=['#00FFFF','#FF00A8','#FFF700','#39FF14','#FF073A','#2979FF','#B026FF','#00FFB3','#FF5F1F','#FF1AFF','#1ECFFF','#A7FF00'];
+const TRAVEL_COST=10;
+const REGION_ORDER=['north','equator','south'];
+const REGIONS={
+  north:{label:'NORTH POLE',emoji:'🐻‍❄️',rows:3,cols:10,rowSum:300,color:'rgba(100,180,255,0.6)',cls:'north'},
+  equator:{label:'EQUATOR',emoji:'🦜',rows:4,cols:10,rowSum:500,color:'rgba(255,200,100,0.6)',cls:'equator'},
+  south:{label:'SOUTH POLE',emoji:'🐧',rows:3,cols:10,rowSum:400,color:'rgba(200,120,255,0.6)',cls:'south'}
 };
+const BASE_PEN=10, PEN_ADD=10;
 
-let gameState={
-  teams:[],
-  moons:{},
-  selectedTeam:null,
-  selectedMoon:'A',
-  selectedCell:null,
-  currentDay:1,
-  totalLost:0,
-  gameOver:false,
-  log:[]
-};
+// ── State ─────────────────────────────────────────────────────────────────────
+let G={teams:[],cells:{},selectedTeam:null,selectedCell:null,currentDay:1,gameOver:false,clusterContribs:{},totalLost:0};
+let showVals=false;
 
-let showingValues=true;
-
-function seededNoise(n){
-  const x=Math.sin(n*999.131)*10000;
-  return x-Math.floor(x);
+// ── Modal helper ──────────────────────────────────────────────────────────────
+// All modals rendered into #modalMount so they're always in real DOM
+function showModal(innerHTML){
+  const mount=document.getElementById('modalMount');
+  mount.innerHTML=`<div class="modal-bg" id="activeModal">${innerHTML}</div>`;
+}
+function closeModal(){
+  document.getElementById('modalMount').innerHTML='';
 }
 
-function zeroColumns(){
-  // Exactly one zero in every row and column.
-  // Center zero also satisfies both main diagonals exactly once.
-  return [1,2,3,4,0,6,7,8,5];
-}
-
-function generateMoonGrid(moonKey){
-  const moon=moonInfo[moonKey];
-  const zeros=zeroColumns();
-  const cells={};
-  for(let r=0;r<9;r++){
-    for(let c=0;c<9;c++){
-      const id=`${String.fromCharCode(65+r)}${c+1}`;
-      let value=0;
-      if(c!==zeros[r]){
-        const wave=Math.abs(Math.sin((r+1)*1.7+(c+1)*2.3+moon.seed));
-        const ridge=((r+1)*(c+3)+(moon.seed%11)*7)%53;
-        const diagonalBoost=(r===c||r+c===8)?24:0;
-        const crater=Math.floor(seededNoise((r+1)*31+(c+1)*73+moon.seed)*42);
-        value=Math.round((28+wave*86+ridge+diagonalBoost+crater)*moon.multiplier);
-        value=Math.max(3,Math.min(200,value));
-      }
-      cells[id]={id,row:r,col:c,value,mined:false,minedBy:null,closed:false,moon:moonKey};
+// ── Grid generation ───────────────────────────────────────────────────────────
+function genRegionRows(rowCount,cols,rowSum){
+  const rows=[];
+  for(let r=0;r<rowCount;r++){
+    const row=new Array(cols).fill(0);
+    const zeroCol=Math.floor(Math.random()*cols);
+    row[zeroCol]=0;
+    const nzCols=[];
+    for(let c=0;c<cols;c++) if(c!==zeroCol) nzCols.push(c);
+    const n=nzCols.length;
+    let rem=rowSum;
+    for(let i=0;i<n-1;i++){
+      const left=n-1-i;
+      const minV=Math.max(1,rem-left*99);
+      const maxV=Math.min(99,rem-left);
+      const v=minV+Math.floor(Math.random()*(maxV-minV+1));
+      row[nzCols[i]]=v; rem-=v;
     }
+    row[nzCols[n-1]]=rem;
+    rows.push(row);
   }
-  return cells;
+  return rows;
 }
 
-function initializeGame(){
-  gameState.moons={A:generateMoonGrid('A'),B:generateMoonGrid('B'),C:generateMoonGrid('C')};
+function initCells(){
+  G.cells={};
+  REGION_ORDER.forEach(rn=>{
+    const{rows,cols,rowSum}=REGIONS[rn];
+    const grid=genRegionRows(rows,cols,rowSum);
+    for(let r=0;r<rows;r++)
+      for(let c=0;c<cols;c++){
+        const id=`${rn[0].toUpperCase()}${r}${String.fromCharCode(65+c)}`;
+        G.cells[id]={id,region:rn,row:r,col:c,anova:grid[r][c],mined:false,minedBy:null,closed:false};
+      }
+  });
 }
 
-function createTeam(){
-  const input=document.getElementById('teamNameInput');
-  const name=input.value.trim();
-  if(!name)return;
-  if(gameState.teams.some(t=>t.name.toLowerCase()===name.toLowerCase())){alert('Team name already exists.');return;}
-  if(gameState.teams.length>=teamColors.length){alert('Maximum teams reached.');return;}
-  const team={
-    id:Date.now()+Math.floor(Math.random()*1000),
-    name,
-    color:teamColors[gameState.teams.length],
-    moon:'A',
-    status:'ready',
-    freeDay:1,
-    extracted:0,
-    destroyed:0,
-    speedChoices:{fast:0,medium:0,slow:0},
-    totalPotential:0
-  };
-  gameState.teams.push(team);
-  if(!gameState.selectedTeam)gameState.selectedTeam=team.id;
-  input.value='';
-  renderAll();
+// ── Render planet ─────────────────────────────────────────────────────────────
+function renderPlanet(){
+  const area=document.getElementById('planetArea');
+  area.innerHTML='';
+  const activeTeam=G.teams.find(t=>t.id===G.selectedTeam);
+
+  REGION_ORDER.forEach((rn,ri)=>{
+    if(ri>0){
+      const div=document.createElement('div');
+      div.className='divider';
+      div.textContent='— — 10 DAYS — —';
+      area.appendChild(div);
+    }
+
+    const rd=REGIONS[rn];
+    const wrap=document.createElement('div');
+    wrap.className=`region-wrap ${rd.cls}`;
+
+    // Header row
+    const hdr=document.createElement('div');
+    hdr.className='region-hdr';
+    const lbl=document.createElement('span');
+    lbl.className='region-lbl';
+    lbl.style.color=rd.color;
+    lbl.textContent=rd.label;
+    hdr.appendChild(lbl);
+
+    // Travel button — show if active team is ready and NOT in this region
+    if(activeTeam && activeTeam.status==='ready' && activeTeam.region!==rn){
+      const from=REGION_ORDER.indexOf(activeTeam.region);
+      const to=REGION_ORDER.indexOf(rn);
+      const cost=Math.abs(from-to)*TRAVEL_COST;
+      const tbtn=document.createElement('button');
+      tbtn.className='travel-btn';
+      tbtn.textContent=`🚀 ${cost} days`;
+      tbtn.addEventListener('click',()=>openTravelPopup(activeTeam,rn,cost));
+      hdr.appendChild(tbtn);
+    }
+    wrap.appendChild(hdr);
+
+    // Grid rows
+    for(let r=0;r<rd.rows;r++){
+      const rowDiv=document.createElement('div');
+      rowDiv.className='grid-row';
+      for(let c=0;c<rd.cols;c++){
+        const id=`${rn[0].toUpperCase()}${r}${String.fromCharCode(65+c)}`;
+        const cell=G.cells[id];
+        const div=document.createElement('div');
+        div.className='cell';
+        if(cell.mined){
+          div.classList.add('mined');
+          const t=G.teams.find(t=>t.id===cell.minedBy);
+          const tc=t?t.color:'#888';
+          div.style.borderColor=tc;
+          div.style.boxShadow=`0 0 10px ${tc}`;
+          div.innerHTML=`<span class="cval" style="color:${tc};font-size:0.9rem;font-weight:900">${cell.anova}</span>`;
+        } else if(cell.closed){
+          div.classList.add('closed');
+          div.innerHTML=`<span class="cid" style="display:none"></span><span class="cval">${cell.anova}</span>`;
+        } else {
+          // Dim cells not in active team's region
+          const inRegion=!activeTeam||activeTeam.region===rn;
+          if(!inRegion) div.classList.add('inactive');
+          if(showVals) div.classList.add('showv');
+          if(G.selectedCell===id) div.classList.add('selected');
+          div.innerHTML=`<span class="cid">${id}</span><span class="cval">${cell.anova}</span>`;
+          if(inRegion) div.addEventListener('click',()=>selectCell(id));
+        }
+        rowDiv.appendChild(div);
+      }
+      wrap.appendChild(rowDiv);
+    }
+    area.appendChild(wrap);
+  });
 }
 
-function selectedTeam(){
-  return gameState.teams.find(t=>t.id===gameState.selectedTeam);
-}
-
-function selectTeam(id){
-  const team=gameState.teams.find(t=>t.id===id);
-  if(!team)return;
-  gameState.selectedTeam=id;
-  gameState.selectedMoon=team.moon;
-  renderAll();
-}
-
-function selectMoon(moon){
-  gameState.selectedMoon=moon;
-  renderAll();
-}
-
-function travelSelectedTeam(destination){
-  const team=selectedTeam();
-  if(!team)return alert('Select a team first.');
-  if(team.status!=='ready')return alert(`${team.name} is unavailable until Day ${team.freeDay}.`);
-  if(team.moon===destination)return;
-  const current=moonInfo[team.moon];
-  const direct=current.travel[destination];
-  if(!direct){
-    alert('Teams must travel sequentially: A ↔ B ↔ C.');
-    return;
-  }
-  team.status='mining';
-  team.freeDay=gameState.currentDay+direct;
-  team.moon=destination;
-  gameState.selectedMoon=destination;
-  advanceClock();
-}
-
-function renderAll(){
-  document.getElementById('dayValue').textContent=gameState.currentDay;
-  renderTeams();
-  renderMoonButtons();
-  renderBoard();
-  renderLeaderboard();
-  renderSelectedTeamInfo();
-  updateTotals();
-}
-
-function renderTeams(){
-  const list=document.getElementById('teamList');
-  list.innerHTML='';
-  gameState.teams
-    .slice()
-    .sort((a,b)=>a.freeDay-b.freeDay)
-    .forEach(team=>{
-      const card=document.createElement('div');
-      card.className='team-card'+(team.id===gameState.selectedTeam?' active':'')+(team.status!=='ready'?' mining':'');
-      const net=team.extracted-team.destroyed;
-      card.innerHTML=`
-        <div class="team-name">
-          <span class="team-dot" style="background:${team.color};box-shadow:0 0 12px ${team.color}"></span>
-          ${team.name}
-          <span class="team-status">${team.status==='ready'?'READY':'DAY '+team.freeDay}</span>
+// ── Travel popup ──────────────────────────────────────────────────────────────
+function openTravelPopup(team,targetRegion,cost){
+  const fromLabel=REGIONS[team.region].label;
+  const toLabel=REGIONS[targetRegion].label;
+  showModal(`
+    <div class="tpopup">
+      <div class="tptitle">🚀 TRAVEL</div>
+      <div class="tpsub">
+        <strong style="color:#00ffff">${team.name}</strong><br>
+        ${fromLabel} → ${toLabel}<br>
+        <span style="color:#ff8800;font-size:1.1rem;font-weight:700">${cost} days</span>
+      </div>
+      <div class="tpopts">
+        <div class="tpbtn go" onclick="confirmTravel('${team.id}','${targetRegion}',${cost})">
+          <div class="tpbtn-icon">🚀</div>
+          <div class="tpbtn-name" style="color:#ff8800">Go</div>
+          <div class="tpbtn-cost">${cost} days</div>
         </div>
-        <div class="team-stats">
-          <span style="color:var(--green)">▲ ${team.extracted}</span>
-          <span style="color:var(--red)">✕ ${team.destroyed}</span>
-          <span>Moon ${team.moon}</span>
-          <span style="color:${net>=0?'var(--green)':'var(--red)'}">Net ${net}</span>
-        </div>`;
-      card.onclick=()=>selectTeam(team.id);
-      list.appendChild(card);
-    });
+        <div class="tpbtn cancel" onclick="closeModal()">
+          <div class="tpbtn-icon">✕</div>
+          <div class="tpbtn-name">Cancel</div>
+          <div class="tpbtn-cost">stay put</div>
+        </div>
+      </div>
+    </div>
+  `);
 }
 
-function renderMoonButtons(){
-  ['A','B','C'].forEach(m=>{
-    document.getElementById('moonBtn'+m).classList.toggle('active',gameState.selectedMoon===m);
-    const teamsHere=gameState.teams.filter(t=>t.moon===m);
-    const orb=document.getElementById('orb'+m);
-    if(!teamsHere.length){
-      orb.style.boxShadow='';
-      return;
-    }
-    const glows=teamsHere.map((t,i)=>`0 0 0 ${3+i*5}px ${t.color}55, 0 0 ${22+i*12}px ${t.color}55`).join(',');
-    orb.style.boxShadow=glows+', inset -28px -32px 42px rgba(0,0,0,.78), inset 18px 14px 30px rgba(255,255,255,.18)';
+function confirmTravel(teamId,targetRegion,cost){
+  closeModal();
+  const team=G.teams.find(t=>t.id==teamId);
+  if(!team)return;
+  team.region=targetRegion;
+  team.freeDay=G.currentDay+cost;
+  team.status='travel';
+  renderTeams();
+  renderPlanet();
+  renderLeaderboard();
+  advance();
+}
+
+// ── Cell selection ────────────────────────────────────────────────────────────
+function selectCell(id){
+  const cell=G.cells[id];
+  if(!cell||cell.mined||cell.closed||!G.selectedTeam)return;
+  const team=G.teams.find(t=>t.id===G.selectedTeam);
+  if(!team||team.status!=='ready'||team.region!==cell.region)return;
+  G.selectedCell=id;
+  renderPlanet();
+  openMinePopup(cell,team);
+}
+
+// ── Mine popup ────────────────────────────────────────────────────────────────
+function openMinePopup(cell,team){
+  if(cell.anova===0){openVoidPopup(cell,team);return;}
+  const v=cell.anova;
+  const fD=Math.ceil(v/6),fDest=Math.min(fD*3,v),fExt=Math.min(v-fDest,fD*3);
+  const mD=Math.ceil(v/3),mDest=Math.min(mD,v),mExt=v-mDest;
+  const srow=(d,dest,ext)=>`<span style="color:#fff;font-size:1.05rem;font-weight:700">${d} days</span><br><span style="color:#ff4444;font-weight:700">-${dest}</span> / <span style="color:#00ff88;font-weight:700">+${ext}</span>`;
+
+  // Clone header for unblurred stats
+  const hdrHTML=document.getElementById('mainHdr').outerHTML;
+
+  showModal(`
+    <div style="position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(5px)"></div>
+    <div style="position:fixed;top:0;left:0;right:0;z-index:1;pointer-events:none">${hdrHTML}</div>
+    <div class="mpopup" style="position:relative;z-index:2;margin-top:200px">
+      <button class="xbtn" onclick="closePopup()">✕</button>
+      <div class="mph">
+        <div class="mpcell">${cell.id}</div>
+        <div class="mpanova" style="color:${team.color};text-shadow:0 0 22px ${team.color}88">${v} ANOVA</div>
+      </div>
+      <div class="mpteam">Team: <span style="color:${team.color}">${team.name}</span></div>
+      <div class="speedopts">
+        <button class="spdbtn fast" onclick="doMine('fast')"><div class="spdtitle">FAST</div><div class="spdicon">🐇</div><div class="spdstats">${srow(fD,fDest,fExt)}</div></button>
+        <button class="spdbtn medium" onclick="doMine('medium')"><div class="spdtitle">MEDIUM</div><div class="spdicon">🐢</div><div class="spdstats">${srow(mD,mDest,mExt)}</div></button>
+        <button class="spdbtn slow" onclick="doMine('slow')"><div class="spdtitle">SLOW</div><div class="spdicon">🐌</div><div class="spdstats">${srow(v,0,v)}</div></button>
+      </div>
+    </div>
+  `);
+}
+
+function closePopup(){
+  closeModal();
+  G.selectedCell=null;
+  renderPlanet();
+}
+
+// ── Void popup ────────────────────────────────────────────────────────────────
+function openVoidPopup(cell,team){
+  let lost=0;
+  Object.values(G.cells).forEach(c=>{
+    if(!c.mined&&!c.closed&&c.id!==cell.id&&c.row===cell.row&&c.region===cell.region) lost+=c.anova;
   });
+  showModal(`
+    <div class="vpopup">
+      <div class="vskull">💀</div>
+      <div class="vtitle">ANOVA LOST</div>
+      <div class="vcell">Cell ${cell.id}</div>
+      <div class="vteam">Team: <span style="color:${team.color}">${team.name}</span></div>
+      <div class="vlostlbl">ANOVA LOST TO THE VOID</div>
+      <div class="vlostamt">${lost.toLocaleString()}</div>
+      <button class="vack" onclick="confirmVoid()">ACKNOWLEDGE</button>
+    </div>
+  `);
 }
 
-function renderBoard(){
-  const grid=document.getElementById('grid');
-  const shell=document.getElementById('boardShell');
-  const moon=gameState.selectedMoon;
-  const teamsHere=gameState.teams.filter(t=>t.moon===moon);
-  shell.style.setProperty('--moonGlow',teamsHere.length
-    ? teamsHere.map((t,i)=>`0 0 0 ${4+i*6}px ${t.color}44, 0 0 ${36+i*14}px ${t.color}33`).join(',')
-    : '0 0 80px rgba(125,249,255,.08)'
-  );
-  grid.innerHTML='';
-  Object.values(gameState.moons[moon]).forEach(cell=>{
-    const div=document.createElement('div');
-    div.className='cell'+(cell.value===0?' zero':'')+(cell.mined?' mined':'')+(cell.closed?' closed':'')+(showingValues?'':' hide-values');
-    if(cell.minedBy){
-      const team=gameState.teams.find(t=>t.id===cell.minedBy);
-      if(team){
-        div.style.borderColor=team.color;
-        div.style.boxShadow=`0 0 14px ${team.color}88,inset 0 0 18px ${team.color}22`;
+function confirmVoid(){
+  closeModal();
+  const team=G.teams.find(t=>t.id===G.selectedTeam);
+  const cell=G.cells[G.selectedCell];
+  if(!team||!cell)return;
+  const affected=Object.values(G.cells).filter(c=>!c.mined&&!c.closed&&c.id!==cell.id&&c.row===cell.row&&c.region===cell.region).map(c=>c.id);
+  cell.mined=true; cell.minedBy=team.id;
+  team.freeDay=G.currentDay+1; team.status='mining';
+  renderPlanet();
+  affected.forEach((id,i)=>setTimeout(()=>{const el=document.querySelector(`[data-id="${id}"]`);if(el)el.classList.add('glitch-out');},i*55));
+  setTimeout(()=>{sealRow(cell);G.selectedCell=null;advance();},affected.length*55+1200);
+}
+
+function sealRow(cell){
+  let lost=0;
+  Object.values(G.cells).forEach(c=>{if(!c.mined&&!c.closed&&c.row===cell.row&&c.region===cell.region){c.closed=true;lost+=c.anova;}});
+  G.totalLost+=lost;
+  document.getElementById('svLost').textContent=G.totalLost.toLocaleString();
+}
+
+// ── Mining ────────────────────────────────────────────────────────────────────
+function doMine(speed){
+  closeModal();
+  const team=G.teams.find(t=>t.id===G.selectedTeam);
+  const cell=G.cells[G.selectedCell];
+  if(!team||!cell)return;
+  const v=cell.anova;
+  let dest=0,ext=0,days=0;
+  if(speed==='fast'){days=Math.ceil(v/6);dest=Math.min(days*3,v);ext=Math.min(v-dest,days*3);}
+  else if(speed==='medium'){days=Math.ceil(v/3);dest=Math.min(days,v);ext=v-dest;}
+  else{days=v;ext=v;}
+  team.speedChoices=(team.speedChoices||{fast:0,medium:0,slow:0});
+  team.speedChoices[speed]++;
+  const scr=document.getElementById('animScreen');scr.style.display='flex';
+  const sparks=document.getElementById('animSparks');sparks.innerHTML='';
+  const iv=setInterval(()=>{for(let i=0;i<4;i++){const s=document.createElement('div');s.className='spark';const a=Math.random()*Math.PI*2,d=45+Math.random()*90;s.style.setProperty('--tx',`${Math.cos(a)*d}px`);s.style.setProperty('--ty',`${Math.sin(a)*d}px`);s.style.background=['#ffff00','#ff8800','#fff','#00ffff'][~~(Math.random()*4)];sparks.appendChild(s);setTimeout(()=>s.remove(),600);}},100);
+  const st=speed==='slow'?'SLOW':speed.toUpperCase();
+  document.getElementById('animRes').innerHTML=`<div class="ares-ext">+${ext} EXTRACTED</div><div class="ares-dest">-${dest} DESTROYED</div><div style="margin-top:12px;color:#888;font-size:0.85rem">${days} days · ${st}</div>`;
+  setTimeout(()=>{
+    clearInterval(iv);
+    team.extracted=(team.extracted||0)+ext;
+    team.destroyed=(team.destroyed||0)+dest;
+    team.totalPotential=(team.totalPotential||0)+v;
+    team.status='mining'; team.freeDay=G.currentDay+days;
+    cell.mined=true; cell.minedBy=team.id;
+    if(dest>0) applyClusterPenalties(team,dest);
+    G.selectedCell=null;
+    setTimeout(()=>{scr.style.display='none';advance();},400);
+  },2000);
+}
+
+// ── Cluster penalties ─────────────────────────────────────────────────────────
+function applyClusterPenalties(team,destroyed){
+  const total=G.teams.reduce((s,t)=>s+(t.destroyed||0),0);
+  let rem=destroyed,cur=total-destroyed;
+  while(rem>0){
+    const ti=Math.floor(cur/100),te=(ti+1)*100,space=te-cur,amt=Math.min(rem,space);
+    if(!G.clusterContribs[ti])G.clusterContribs[ti]={};
+    if(!G.clusterContribs[ti][team.id])G.clusterContribs[ti][team.id]=0;
+    G.clusterContribs[ti][team.id]+=amt;
+    if(cur+amt>=te){
+      let mxT=null,mxC=0;
+      Object.entries(G.clusterContribs[ti]).forEach(([id,c])=>{if(c>mxC){mxC=c;mxT=G.teams.find(t=>t.id==id);}});
+      if(mxT){
+        const pen=BASE_PEN+ti*PEN_ADD; mxT.penalties=(mxT.penalties||0)+pen;
+        showPenalty(mxT.name,pen,ti*100+1,te);
       }
     }
-    div.innerHTML=`<span class="value">${cell.value}</span><span class="hidden-id">${cell.id}</span>`;
-    div.onclick=()=>selectCell(cell.id);
-    grid.appendChild(div);
+    cur+=amt; rem-=amt;
+  }
+  updateTotals(); renderLeaderboard();
+}
+
+function showPenalty(tn,pen,rs,re){
+  const n=document.getElementById('penNotif');
+  document.getElementById('penTeam').textContent=tn;
+  document.getElementById('penAmt').textContent=`-${pen} ANOVA`;
+  document.getElementById('penReason').textContent=`Highest contributor to cluster ${rs}-${re}`;
+  n.style.display='block'; n.classList.remove('hiding');
+  setTimeout(()=>{n.classList.add('hiding');setTimeout(()=>n.style.display='none',450);},3500);
+}
+
+// ── Turn ──────────────────────────────────────────────────────────────────────
+function advance(){
+  const teams=G.teams; if(!teams.length)return;
+  teams.forEach(t=>{if((t.status==='mining'||t.status==='travel')&&t.freeDay<=G.currentDay)t.status='ready';});
+  const nextDay=Math.min(...teams.map(t=>t.freeDay||1));
+  G.currentDay=Math.max(G.currentDay,nextDay);
+  teams.forEach(t=>{if((t.status==='mining'||t.status==='travel')&&t.freeDay<=G.currentDay)t.status='ready';});
+  const next=teams.find(t=>t.status==='ready'); if(next) G.selectedTeam=next.id;
+  document.getElementById('svDay').textContent=G.currentDay;
+  renderTeams(); renderPlanet(); renderLeaderboard();
+  if(!Object.values(G.cells).some(c=>!c.mined&&!c.closed)) endGame();
+}
+
+// ── Render teams ──────────────────────────────────────────────────────────────
+function renderTeams(){
+  const list=document.getElementById('teamList'); list.innerHTML='';
+  G.teams.forEach(t=>{
+    const div=document.createElement('div');
+    div.className='tcard'+(t.id===G.selectedTeam?' active':'')+(t.status!=='ready'?' busy':'');
+    let badge='ready',btext='Ready';
+    if(t.status==='mining'){badge='mining';btext=`Mining until Day ${t.freeDay}`;}
+    else if(t.status==='travel'){badge='travel';btext=`Traveling until Day ${t.freeDay}`;}
+    const rn=t.region?REGIONS[t.region]?.label:'—';
+    div.innerHTML=`<div class="tcname"><span class="tcdot" style="background:${t.color};box-shadow:0 0 6px ${t.color}"></span>${t.name}<span class="tcbadge ${badge}">${btext}</span></div><div class="tcstats"><span class="tcext">▲ ${t.extracted||0}</span><span class="tcdest">✕ ${t.destroyed||0}</span></div><div class="tcreg">${rn}</div>`;
+    div.addEventListener('click',()=>{if(t.status==='ready'){G.selectedTeam=t.id;G.selectedCell=null;renderTeams();renderPlanet();renderLeaderboard();}});
+    list.appendChild(div);
   });
 }
 
+// ── Render leaderboard ────────────────────────────────────────────────────────
 function renderLeaderboard(){
-  const board=document.getElementById('leaderboard');
-  const sorted=gameState.teams.slice().sort((a,b)=>(b.extracted-b.destroyed)-(a.extracted-a.destroyed));
-  board.innerHTML=sorted.map((t,i)=>{
-    const net=t.extracted-t.destroyed;
-    return `<div class="leaderboard-entry">
-      <span><span style="color:${t.color}">●</span> ${i+1}. ${t.name}</span>
-      <span style="color:${net>=0?'var(--green)':'var(--red)'}">${net}</span>
-    </div>`;
-  }).join('') || `<div class="small-note">No teams yet.</div>`;
-}
-
-function renderSelectedTeamInfo(){
-  const box=document.getElementById('selectedTeamInfo');
-  const team=selectedTeam();
-  if(!team){
-    box.textContent='Create or select a team.';
-    return;
-  }
-  box.innerHTML=`
-    <div style="color:${team.color};font-weight:700;margin-bottom:5px">${team.name}</div>
-    <div>Location: Moon ${team.moon}</div>
-    <div>Status: ${team.status==='ready'?'Ready':'Unavailable until Day '+team.freeDay}</div>
-    <div>Fast / Medium / Slow: ${team.speedChoices.fast} / ${team.speedChoices.medium} / ${team.speedChoices.slow}</div>
-  `;
+  document.getElementById('leaderboard').innerHTML=[...G.teams].sort((a,b)=>((b.extracted||0)-(b.penalties||0))-((a.extracted||0)-(a.penalties||0))).map((t,i)=>{
+    const s=(t.extracted||0)-(t.penalties||0);
+    const pen=(t.penalties||0)>0?`<span class="lb-pen">-${t.penalties}</span>`:'';
+    return `<div class="lb-entry ${i===0?'leader':''}"><span class="lb-name">${i+1}.&nbsp;${t.name}</span><span class="lb-right">${pen}<span style="color:${s>=0?'#00ff88':'#ff4444'};font-variant-numeric:tabular-nums">▲&nbsp;${s}</span></span></div>`;
+  }).join('');
+  updateTotals(); updateClusterBar(); renderClusterVis();
 }
 
 function updateTotals(){
-  let available=0,mined=0,destroyed=0,lost=gameState.totalLost;
-  Object.values(gameState.moons).forEach(moonCells=>{
-    Object.values(moonCells).forEach(c=>{
-      if(!c.mined&&!c.closed)available+=c.value;
-    });
-  });
-  gameState.teams.forEach(t=>{mined+=t.extracted;destroyed+=t.destroyed});
-  document.getElementById('remainingValue').textContent=available.toLocaleString();
-  document.getElementById('minedValue').textContent=mined.toLocaleString();
-  document.getElementById('destroyedValue').textContent=destroyed.toLocaleString();
-  document.getElementById('lostValue').textContent=lost.toLocaleString();
+  const dest=G.teams.reduce((s,t)=>s+(t.destroyed||0),0);
+  const mine=G.teams.reduce((s,t)=>s+(t.extracted||0),0);
+  const avail=Object.values(G.cells).reduce((s,c)=>s+c.anova,0);
+  const closedVal=Object.values(G.cells).filter(c=>c.closed&&!c.mined).reduce((s,c)=>s+c.anova,0);
+  document.getElementById('svDest').textContent=dest.toLocaleString();
+  document.getElementById('svMine').textContent=mine.toLocaleString();
+  document.getElementById('svRem').textContent=(avail-mine-dest-closedVal).toLocaleString();
+  document.getElementById('svLost').textContent=G.totalLost.toLocaleString();
 }
 
-function selectCell(id){
-  const team=selectedTeam();
-  if(!team)return;
-  if(team.status!=='ready')return;
-  if(team.moon!==gameState.selectedMoon)return;
-  const cell=gameState.moons[gameState.selectedMoon][id];
-  if(!cell||cell.mined||cell.closed)return;
-  gameState.selectedCell=id;
-  showMiningPopup(cell,team);
+function updateClusterBar(){
+  const total=G.teams.reduce((s,t)=>s+(t.destroyed||0),0),ti=Math.floor(total/100);
+  document.getElementById('clusterPen').textContent=`-${BASE_PEN+ti*PEN_ADD}`;
+  const contrib=G.clusterContribs[ti]||{};
+  const sorted=G.teams.map(t=>({t,c:contrib[t.id]||0})).filter(x=>x.c>0).sort((a,b)=>a.c-b.c);
+  let h='';
+  sorted.forEach(({t,c})=>{h+=`<div class="cseg" style="width:${c}%;background:${t.color}">${c}</div>`;});
+  const used=Object.values(contrib).reduce((s,v)=>s+v,0),rem=100-used;
+  if(rem>0)h+=`<div class="cseg" style="width:${rem}%;background:rgba(255,255,255,0.1);color:#fff">${rem}</div>`;
+  document.getElementById('clusterBar').innerHTML=h;
 }
 
-function showMiningPopup(cell,team){
-  document.getElementById('overlay').style.display='block';
-  document.getElementById('miningPopup').style.display='block';
-  document.getElementById('popupCellId').textContent=`Moon ${gameState.selectedMoon} / ${cell.id}`;
-  document.getElementById('popupValue').textContent=`${cell.value}`;
-  document.getElementById('popupValue').style.color=cell.value===0?'var(--red)':team.color;
-  document.getElementById('popupTeam').innerHTML=`Team: <span style="color:${team.color}">${team.name}</span>`;
-  const zeroWarning=document.getElementById('zeroWarning');
-
-  if(cell.value===0){
-    const lost=calculateZeroLoss(cell);
-    zeroWarning.style.display='block';
-    zeroWarning.innerHTML=`ZERO EVENT: mining this cell seals its row, column, and diagonals.<br>${lost.toLocaleString()} ANOVA may be lost to the void.`;
-  }else{
-    zeroWarning.style.display='none';
+function renderClusterVis(){
+  const total=G.teams.reduce((s,t)=>s+(t.destroyed||0),0),done=Math.floor(total/100);
+  let html='';
+  for(let i=done-1;i>=0;i--){
+    const rs=i*100+1,re=(i+1)*100,pen=BASE_PEN+i*PEN_ADD;
+    const contrib=G.clusterContribs[i]||{};
+    let bh='',lh='';
+    G.teams.forEach(t=>{const c=contrib[t.id]||0;if(c>0){bh+=`<div class="cvseg" style="width:${c}%;background:${t.color}"></div>`;lh+=`<span style="display:flex;align-items:center;gap:3px;color:#aaa;font-size:0.6rem;font-family:'IBM Plex Mono',monospace"><span style="width:7px;height:7px;border-radius:50%;background:${t.color};display:inline-block"></span>${t.name}:${c}</span>`;}});
+    html+=`<div class="cvblock"><div class="cvhdr"><span>${rs}-${re}</span><span style="color:#ff4444">-${pen} ✓</span></div><div class="cvbar">${bh}</div><div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:3px">${lh}</div></div>`;
   }
-
-  const v=cell.value;
-  const fastDays=Math.max(1,Math.ceil(v/38));
-  const fastDestroyed=Math.min(v,Math.ceil(v*.42));
-  const fastExtracted=v-fastDestroyed;
-
-  const mediumDays=Math.max(1,Math.ceil(v/24));
-  const mediumDestroyed=Math.min(v,Math.ceil(v*.20));
-  const mediumExtracted=v-mediumDestroyed;
-
-  const slowDays=Math.max(1,Math.ceil(v/12));
-  const slowDestroyed=0;
-  const slowExtracted=v;
-
-  document.getElementById('fastStats').innerHTML=`${fastDays} days<br><span style="color:var(--green)">+${fastExtracted}</span> extracted<br><span style="color:var(--red)">-${fastDestroyed}</span> destroyed`;
-  document.getElementById('mediumStats').innerHTML=`${mediumDays} days<br><span style="color:var(--green)">+${mediumExtracted}</span> extracted<br><span style="color:var(--red)">-${mediumDestroyed}</span> destroyed`;
-  document.getElementById('slowStats').innerHTML=`${slowDays} days<br><span style="color:var(--green)">+${slowExtracted}</span> extracted<br><span style="color:var(--red)">-${slowDestroyed}</span> destroyed`;
+  document.getElementById('clusterVis').innerHTML=html||'<div style="color:#444;font-size:0.75rem;text-align:center;padding:8px;font-family:var(--mono)">No exhausted clusters yet</div>';
 }
 
-function closeMiningPopup(){
-  document.getElementById('overlay').style.display='none';
-  document.getElementById('miningPopup').style.display='none';
-  gameState.selectedCell=null;
+// ── Add team ──────────────────────────────────────────────────────────────────
+function addTeam(){
+  const inp=document.getElementById('teamInput'),name=inp.value.trim();
+  if(!name)return;
+  if(G.teams.find(t=>t.name===name)){alert('Name taken!');return;}
+  if(G.teams.length>=TEAM_COLORS.length){alert('Max teams!');return;}
+  const team={id:'t'+Date.now(),name,color:TEAM_COLORS[G.teams.length],extracted:0,destroyed:0,penalties:0,freeDay:1,status:'ready',region:null,speedChoices:{fast:0,medium:0,slow:0},totalPotential:0};
+  G.teams.push(team); inp.value='';
+  if(!G.selectedTeam) G.selectedTeam=team.id;
+  openRegionPicker(team);
 }
 
-function selectMiningSpeed(speed){
-  const team=selectedTeam();
-  const cell=gameState.moons[gameState.selectedMoon][gameState.selectedCell];
-  if(!team||!cell)return;
-
-  let days=1,extracted=0,destroyed=0;
-  const v=cell.value;
-
-  if(v===0){
-    const lost=calculateZeroLoss(cell);
-    gameState.totalLost+=lost;
-    sealZeroLines(cell);
-    extracted=0;
-    destroyed=0;
-    days=1;
-  }else if(speed==='fast'){
-    days=Math.max(1,Math.ceil(v/38));
-    destroyed=Math.min(v,Math.ceil(v*.42));
-    extracted=v-destroyed;
-  }else if(speed==='medium'){
-    days=Math.max(1,Math.ceil(v/24));
-    destroyed=Math.min(v,Math.ceil(v*.20));
-    extracted=v-destroyed;
-  }else{
-    days=Math.max(1,Math.ceil(v/12));
-    destroyed=0;
-    extracted=v;
-  }
-
-  team.speedChoices[speed]++;
-  team.extracted+=extracted;
-  team.destroyed+=destroyed;
-  team.totalPotential+=v;
-  team.status='mining';
-  team.freeDay=gameState.currentDay+days;
-
-  cell.mined=true;
-  cell.minedBy=team.id;
-
-  closeMiningPopup();
-  advanceClock();
+function openRegionPicker(team){
+  showModal(`
+    <div class="rpopup">
+      <div class="rptitle">Where does ${team.name} start?</div>
+      <div class="rpsub">Choose your starting region</div>
+      <div class="rpopts">
+        <div class="rpick" onclick="pickRegion('${team.id}','north')"><div class="rpick-icon">${REGIONS.north.emoji}</div><div class="rpick-name">North Pole</div></div>
+        <div class="rpick" onclick="pickRegion('${team.id}','equator')"><div class="rpick-icon">${REGIONS.equator.emoji}</div><div class="rpick-name">Equator</div></div>
+        <div class="rpick" onclick="pickRegion('${team.id}','south')"><div class="rpick-icon">${REGIONS.south.emoji}</div><div class="rpick-name">South Pole</div></div>
+      </div>
+    </div>
+  `);
 }
 
-function calculateZeroLoss(cell){
-  let lost=0;
-  const cells=Object.values(gameState.moons[cell.moon]);
-  cells.forEach(c=>{
-    if(c.id===cell.id||c.mined||c.closed)return;
-    if(c.row===cell.row||c.col===cell.col||c.row===c.col||c.row+c.col===8){
-      lost+=c.value;
-    }
-  });
-  return lost;
+function pickRegion(teamId,rn){
+  closeModal();
+  const team=G.teams.find(t=>t.id==teamId);
+  if(team) team.region=rn;
+  renderTeams(); renderPlanet(); renderLeaderboard();
 }
 
-function sealZeroLines(cell){
-  const cells=Object.values(gameState.moons[cell.moon]);
-  cells.forEach(c=>{
-    if(c.id===cell.id||c.mined||c.closed)return;
-    if(c.row===cell.row||c.col===cell.col||c.row===c.col||c.row+c.col===8){
-      c.closed=true;
-    }
-  });
+// ── Toggles ───────────────────────────────────────────────────────────────────
+function toggleVals(){
+  showVals=!showVals;
+  const btn=document.getElementById('btnVals');
+  btn.textContent=showVals?'HIDE VALUES':'SHOW VALUES';
+  btn.classList.toggle('active',showVals);
+  renderPlanet();
 }
 
-function passTurn(){
-  const team=selectedTeam();
-  if(!team)return;
-  if(team.status!=='ready')return;
-  team.status='mining';
-  team.freeDay=gameState.currentDay+1;
-  advanceClock();
-}
-
-function advanceClock(){
-  if(!gameState.teams.length)return;
-  gameState.teams.forEach(t=>{
-    if(t.status!=='ready'&&t.freeDay<=gameState.currentDay)t.status='ready';
-  });
-  const nextDay=Math.min(...gameState.teams.filter(t=>t.status!=='ready').map(t=>t.freeDay));
-  if(gameState.teams.every(t=>t.status!=='ready') && Number.isFinite(nextDay)){
-    gameState.currentDay=nextDay;
-  }
-  gameState.teams.forEach(t=>{
-    if(t.status!=='ready'&&t.freeDay<=gameState.currentDay)t.status='ready';
-  });
-  const ready=gameState.teams.find(t=>t.status==='ready');
-  if(ready){
-    gameState.selectedTeam=ready.id;
-    gameState.selectedMoon=ready.moon;
-  }
-  renderAll();
-  if(noCellsRemain())endGame();
-}
-
-function noCellsRemain(){
-  return !Object.values(gameState.moons).some(moonCells=>
-    Object.values(moonCells).some(c=>!c.mined&&!c.closed)
-  );
-}
-
-function toggleValues(){
-  showingValues=!showingValues;
-  document.getElementById('toggleValuesBtn').textContent=showingValues?'Hide Values':'Show Values';
-  renderBoard();
-}
-
+// ── End / Reset ───────────────────────────────────────────────────────────────
 function endGame(){
-  if(gameState.gameOver)return;
-  gameState.gameOver=true;
-  document.getElementById('overlay').style.display='block';
-  document.getElementById('winnerBanner').style.display='block';
-
-  const sorted=gameState.teams.slice().sort((a,b)=>(b.extracted-b.destroyed)-(a.extracted-a.destroyed));
-  if(!sorted.length){
-    document.getElementById('winnerName').textContent='No teams joined.';
-    document.getElementById('finalScores').innerHTML='';
-    return;
-  }
-  const winner=sorted[0];
-  document.getElementById('winnerName').innerHTML=`<span style="color:${winner.color}">●</span> ${winner.name} wins with ${winner.extracted-winner.destroyed} net ANOVA`;
-  document.getElementById('finalScores').innerHTML=sorted.map(t=>{
-    const net=t.extracted-t.destroyed;
-    return `<div class="final-row">
-      <span style="color:${t.color}">●</span> ${t.name}: 
-      <span style="color:var(--green)">+${t.extracted}</span> mined,
-      <span style="color:var(--red)">-${t.destroyed}</span> destroyed,
-      Moon ${t.moon},
-      <strong style="color:${net>=0?'var(--green)':'var(--red)'}">${net} net</strong>
-    </div>`;
-  }).join('');
+  if(G.gameOver)return; G.gameOver=true;
+  const sorted=[...G.teams].sort((a,b)=>((b.extracted||0)-(b.penalties||0))-((a.extracted||0)-(a.penalties||0)));
+  document.getElementById('winBg').style.display='block';
+  document.getElementById('winBox').style.display='block';
+  if(!sorted.length){document.getElementById('winName').textContent='No teams!';return;}
+  const w=sorted[0];
+  document.getElementById('winName').textContent=`🏆 ${w.name} wins with ${(w.extracted||0)-(w.penalties||0)} ANOVA!`;
+  const rows=sorted.map(t=>`<tr><td style="color:${t.color}">● ${t.name}</td><td style="color:#00ff88;text-align:right">${t.extracted||0}</td><td style="color:#ff4444;text-align:right">${t.destroyed||0}</td><td style="color:#ff8800;text-align:right">${(t.penalties||0)>0?`-${t.penalties}`:''}</td><td style="font-weight:700;text-align:right;color:${(t.extracted||0)-(t.penalties||0)>=0?'#00ff88':'#ff4444'}">${(t.extracted||0)-(t.penalties||0)}</td></tr>`).join('');
+  document.getElementById('winScores').innerHTML=`<table class="wintbl"><thead><tr><th>Team</th><th style="text-align:right">Mined</th><th style="text-align:right">Dest.</th><th style="text-align:right">Penalty</th><th style="text-align:right">Net</th></tr></thead><tbody>${rows}</tbody></table>`;
 }
 
 function resetGame(){
-  document.getElementById('overlay').style.display='none';
-  document.getElementById('winnerBanner').style.display='none';
-  gameState={
-    teams:[],
-    moons:{},
-    selectedTeam:null,
-    selectedMoon:'A',
-    selectedCell:null,
-    currentDay:1,
-    totalLost:0,
-    gameOver:false,
-    log:[]
-  };
-  showingValues=true;
-  initializeGame();
-  renderAll();
+  document.getElementById('winBg').style.display='none';
+  document.getElementById('winBox').style.display='none';
+  G={teams:[],cells:{},selectedTeam:null,selectedCell:null,currentDay:1,gameOver:false,clusterContribs:{},totalLost:0};
+  showVals=false;
+  document.getElementById('btnVals').textContent='SHOW VALUES';
+  document.getElementById('btnVals').classList.remove('active');
+  initCells(); renderPlanet(); renderTeams(); renderLeaderboard();
 }
 
+// ── Save / Load ───────────────────────────────────────────────────────────────
 function saveGame(){
-  const blob=new Blob([JSON.stringify({version:4,gameState,showingValues},null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;
-  a.download=`anova-lunar-save-${new Date().toISOString().slice(0,10)}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  const blob=new Blob([JSON.stringify({v:2,G,showVals},null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url; a.download=`anova-planet-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
 }
-
-function loadGame(event){
-  const file=event.target.files[0];
-  if(!file)return;
-  const reader=new FileReader();
-  reader.onload=e=>{
+function loadGame(e){
+  const f=e.target.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{
     try{
-      const save=JSON.parse(e.target.result);
-      if(!save.gameState)throw new Error('Invalid save file.');
-      gameState=save.gameState;
-      showingValues=save.showingValues!==false;
-      renderAll();
-    }catch(err){
-      alert('Load failed: '+err.message);
-    }
+      const s=JSON.parse(ev.target.result);
+      G=s.G; showVals=s.showVals||false;
+      document.getElementById('btnVals').textContent=showVals?'HIDE VALUES':'SHOW VALUES';
+      document.getElementById('btnVals').classList.toggle('active',showVals);
+      document.getElementById('svDay').textContent=G.currentDay;
+      renderPlanet(); renderTeams(); renderLeaderboard();
+    }catch(err){alert('Error: '+err.message);}
   };
-  reader.readAsText(file);
-  event.target.value='';
+  r.readAsText(f); e.target.value='';
 }
 
-document.getElementById('teamNameInput').addEventListener('keypress',e=>{
-  if(e.key==='Enter')createTeam();
-});
-
-initializeGame();
-renderAll();
+// ── Boot ──────────────────────────────────────────────────────────────────────
+initCells();
+renderPlanet();
+renderLeaderboard();
+document.getElementById('teamInput').addEventListener('keypress',e=>{if(e.key==='Enter')addTeam();});
 </script>
 </body>
 </html>
